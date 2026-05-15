@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% block title %}الإدارة المالية{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div><h2>الإدارة المالية</h2><p>الأقساط والمدفوعات</p></div>
+  <div class="d-flex gap-2">
+    
+    <a href="{% url 'installment_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i> إضافة قسط
+    </a>
+  </div>
+</div>
+
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if current_tab == 'installments' or not current_tab %}active{% endif %}" href="?tab=installments">الأقساط</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_tab == 'payments' %}active{% endif %}" href="?tab=payments">سجل المدفوعات</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if current_tab == 'monthly' %}active{% endif %}" href="?tab=monthly">الأقساط الشهرية</a>
+  </li>
+</ul>
+
+<!-- ========== تبويب الأقساط العادية ========== -->
+{% if current_tab == 'installments' or not current_tab %}
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <input type="hidden" name="tab" value="installments">
+      <div class="col-md-8">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" name="search" class="form-control" placeholder="البحث باسم الطالب أو رقم القيد..." value="{{ search_query }}">
+          {% if status_filter %}
+          <input type="hidden" name="status" value="{{ status_filter }}">
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-primary w-100">بحث</button>
+      </div>
+    </form>
+    {% if search_query %}
+    <div class="mt-2">
+      <a href="?tab=installments{% if status_filter %}&status={{ status_filter }}{% endif %}" class="text-decoration-none small">
+        <i class="bi bi-x-circle"></i> إلغاء البحث
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  <a href="?tab=installments{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">الكل</a>
+  <a href="?tab=installments&status=overdue{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-sm {% if status_filter == 'overdue' %}btn-danger{% else %}btn-outline-danger{% endif %}">متأخر</a>
+  <a href="?tab=installments&status=pending{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-sm {% if status_filter == 'pending' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">معلق</a>
+  <a href="?tab=installments&status=partial{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-sm {% if status_filter == 'partial' %}btn-warning{% else %}btn-outline-warning{% endif %}">جزئي</a>
+  <a href="?tab=installments&status=paid{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-sm {% if status_filter == 'paid' %}btn-success{% else %}btn-outline-success{% endif %}">مدفوع</a>
+</div>
+
+<div class="table-card">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>الطالب</th><th>مبلغ القسط</th><th>المدفوع</th>
+        <th>المتبقي</th><th>الاستحقاق</th><th>الحالة</th><th>الإجراءات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inst in installments %}
+      <tr>
+        <td>
+          <a href="{% url 'student_detail' inst.student.pk %}" class="fw-semibold text-decoration-none">
+            {{ inst.student.full_name }}
+          </a>
+          <div class="text-muted small" dir="ltr">{{ inst.student.registration_number }}</div>
+        </td>
+        <td>{{ inst.amount|floatformat:0 }} د.ل</td>
+        <td class="text-success"> {{ inst.paid_amount|floatformat:0 }} د.ل</td>
+        <td class="{% if inst.remaining_amount > 0 %}text-danger fw-semibold{% endif %}">
+          {{ inst.remaining_amount|floatformat:0 }} د.ل
+        </td>
+        <td dir="ltr">{{ inst.due_date }}</td>
+        <td><span class="status-badge badge-{{ inst.status }}">{{ inst.get_status_display_ar }}</span></td>
+        <td>
+          <a href="{% url 'installment_edit' inst.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i>
+          </a>
+          {% if inst.remaining_amount > 0 %}
+          <button type="button" class="btn btn-sm btn-success" style="background-color: #25D366; border-color: #25D366;" onclick="sendWhatsappReminder('{{ inst.student.phone }}', '{{ inst.student.full_name }}', '{{ inst.remaining_amount|floatformat:0 }}', 'القسط', '{{ inst.due_date }}')">
+            <i class="bi bi-whatsapp"></i>
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">
+        {% if search_query %}لا توجد نتائج بحث مطابقة لـ "{{ search_query }}"{% else %}لا توجد أقساط{% endif %}
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ========== تبويب المدفوعات ========== -->
+{% elif current_tab == 'payments' %}
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <input type="hidden" name="tab" value="payments">
+      
+      <div class="col-md-12">
+        <label class="form-label small text-muted">البحث بالنص</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" name="search" class="form-control" placeholder="اسم الطالب أو رقم الإيصال..." value="{{ search_query }}">
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <label class="form-label small text-muted">من تاريخ</label>
+        <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+      </div>
+      
+      <div class="col-md-6">
+        <label class="form-label small text-muted">إلى تاريخ</label>
+        <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+      </div>
+      
+      <div class="col-md-12">
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary flex-grow-1">
+            <i class="bi bi-search me-1"></i> بحث
+          </button>
+          <a href="?tab=payments" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-repeat"></i> إعادة تعيين
+          </a>
+        </div>
+      </div>
+    </form>
+    
+    {% if search_query or request.GET.date_from or request.GET.date_to %}
+    <div class="mt-3 pt-2 border-top">
+      <div class="small text-muted">
+        <i class="bi bi-filter-circle"></i> نتائج البحث:
+        {% if search_query %} <span class="badge bg-secondary">النص: {{ search_query }}</span>{% endif %}
+        {% if request.GET.date_from %} <span class="badge bg-secondary">من: {{ request.GET.date_from }}</span>{% endif %}
+        {% if request.GET.date_to %} <span class="badge bg-secondary">إلى: {{ request.GET.date_to }}</span>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="table-card">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>رقم الإيصال</th>
+        <th>الطالب</th>
+        <th>المبلغ</th>
+        <th>التاريخ</th>
+        <th>طريقة الدفع</th>
+        <th>الإجراءات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pay in payments %}
+      <tr>
+        <td dir="ltr" class="font-monospace">{{ pay.receipt_number }}</td>
+        <td>
+          <a href="{% url 'student_detail' pay.student.pk %}" class="fw-semibold text-decoration-none">
+            {{ pay.student.full_name }}
+          </a>
+          <div class="text-muted small" dir="ltr">{{ pay.student.registration_number }}</div>
+        </td>
+        <td class="text-success fw-semibold">{{ pay.amount|floatformat:0 }} د.ل</td>
+        <td dir="ltr">{{ pay.payment_date }}</td>
+        <td>{{ pay.get_method_display_ar }}</td>
+        <td>
+          <a href="{% url 'print_receipt' pay.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-printer"></i>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-center text-muted py-4">
+        {% if search_query or request.GET.date_from or request.GET.date_to %}
+          لا توجد نتائج بحث مطابقة للمعايير المحددة
+        {% else %}
+          لا توجد مدفوعات
+        {% endif %}
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ========== تبويب الأقساط الشهرية ========== -->
+{% elif current_tab == 'monthly' %}
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <input type="hidden" name="tab" value="monthly">
+      
+      <div class="col-md-12">
+        <label class="form-label small text-muted">البحث باسم الطالب أو رقم القيد</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" name="monthly_search" class="form-control" placeholder="اسم الطالب أو رقم القيد..." value="{{ monthly_search }}">
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <label class="form-label small text-muted">الحالة</label>
+        <select name="monthly_status" class="form-select">
+          <option value="">الكل</option>
+          <option value="paid" {% if monthly_status_filter == 'paid' %}selected{% endif %}>مدفوع</option>
+          <option value="overdue" {% if monthly_status_filter == 'overdue' %}selected{% endif %}>متأخر</option>
+          <option value="pending" {% if monthly_status_filter == 'pending' %}selected{% endif %}>معلق</option>
+        </select>
+      </div>
+      
+      <div class="col-md-4">
+        <label class="form-label small text-muted">من تاريخ</label>
+        <input type="date" name="monthly_date_from" class="form-control" value="{{ monthly_date_from }}">
+      </div>
+      
+      <div class="col-md-4">
+        <label class="form-label small text-muted">إلى تاريخ</label>
+        <input type="date" name="monthly_date_to" class="form-control" value="{{ monthly_date_to }}">
+      </div>
+      
+      <div class="col-md-12">
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary flex-grow-1">
+            <i class="bi bi-search me-1"></i> بحث
+          </button>
+          <a href="?tab=monthly" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-repeat"></i> إعادة تعيين
+          </a>
+        </div>
+      </div>
+    </form>
+    
+    {% if monthly_search or monthly_status_filter or monthly_date_from or monthly_date_to %}
+    <div class="mt-3 pt-2 border-top">
+      <div class="small text-muted">
+        <i class="bi bi-filter-circle"></i> نتائج البحث:
+        {% if monthly_search %} <span class="badge bg-secondary">الاسم: {{ monthly_search }}</span>{% endif %}
+        {% if monthly_status_filter %} <span class="badge bg-secondary">الحالة: {{ monthly_status_filter }}</span>{% endif %}
+        {% if monthly_date_from %} <span class="badge bg-secondary">من: {{ monthly_date_from }}</span>{% endif %}
+        {% if monthly_date_to %} <span class="badge bg-secondary">إلى: {{ monthly_date_to }}</span>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="table-card">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>الطالب</th>
+        <th>الشهر</th>
+        <th>المبلغ</th>
+        <th>المدفوع</th>
+        <th>المتبقي</th>
+        <th>تاريخ الاستحقاق</th>
+        <th>الحالة</th>
+        <th>الإجراءات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for monthly in monthly_installments %}
+      <tr>
+        <td>
+          <a href="{% url 'student_detail' monthly.student.pk %}" class="fw-semibold text-decoration-none">
+            {{ monthly.student.full_name }}
+          </a>
+          <div class="text-muted small">{{ monthly.student.registration_number }}</div>
+        </td>
+        <td>الشهر {{ monthly.month_number }}</td>
+        <td>{{ monthly.amount|floatformat:0 }} د.ل</td>
+        <td class="text-success">{{ monthly.paid_amount|floatformat:0 }} د.ل</td>
+        <td class="{% if monthly.remaining_amount > 0 %}text-danger fw-semibold{% endif %}">
+          {{ monthly.remaining_amount|floatformat:0 }} د.ل
+        </td>
+        <td dir="ltr">{{ monthly.due_date }}</td>
+        <td>
+          <span class="badge {% if monthly.status == 'paid' %}bg-success{% elif monthly.status == 'overdue' %}bg-danger{% else %}bg-warning{% endif %}">
+            {{ monthly.get_status_display_ar }}
+          </span>
+        </td>
+        <td>
+          {% if monthly.remaining_amount > 0 %}
+          <a href="{% url 'monthly_payment_add' monthly.id %}" class="btn btn-sm btn-success">
+             تسديد
+          </a>
+          <button type="button" class="btn btn-sm btn-success" style="background-color: #25D366; border-color: #25D366;" onclick="sendWhatsappReminder('{{ monthly.student.phone }}', '{{ monthly.student.full_name }}', '{{ monthly.amount|floatformat:0 }}', '{{ monthly.month_number }}', '{{ monthly.due_date }}')">
+            <i class="bi bi-whatsapp"></i> تذكير
+          </button>
+          {% else %}
+           <p>--</p>
+          {% endif %} 
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center text-muted py-4">
+          {% if monthly_search or monthly_status_filter or monthly_date_from or monthly_date_to %}
+            لا توجد نتائج بحث مطابقة للمعايير المحددة
+          {% else %}
+            لا توجد أقساط شهرية
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+function sendWhatsappReminder(phone, studentName, amount, monthNumber, dueDate) {
+    if (!phone || phone === 'None' || phone === '') {
+        alert('عذراً، لا يوجد رقم هاتف مسجل لهذا الطالب');
+        return;
+    }
+    
+    let cleanPhone = phone.toString().trim();
+    cleanPhone = cleanPhone.replace(/\s/g, '').replace(/-/g, '').replace(/\(/g, '').replace(/\)/g, '');
+    
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = cleanPhone.substring(1);
+    }
+    
+    if (!cleanPhone.startsWith('218') && !cleanPhone.startsWith('+218')) {
+        cleanPhone = '218' + cleanPhone;
+    }
+    
+    cleanPhone = cleanPhone.replace(/^\+/, '');
+    
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('ar-EG');
+    
+    const message = `📢 تذكير بسداد قسط شهري
+    
+الطالب: ${studentName}
+الشهر: ${monthNumber}
+المبلغ المستحق: ${amount} د.ل
+تاريخ الاستحقاق: ${dueDate}
+تاريخ التذكير: ${formattedDate}
+
+ يرجى التوجه إلى إدارة المعهد لتسديد القسط في أقرب وقت.
+
+شكراً لتعاونكم.`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+}
+</script>
+{% endif %}
+{% endblock %}

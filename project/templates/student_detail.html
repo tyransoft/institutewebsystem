@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div class="d-flex align-items-center gap-3">
+    <a href="{% url 'student_list' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-right"></i>
+    </a>
+    <div>
+      <h2>{{ student.full_name }}</h2>
+      <p dir="ltr">{{ student.registration_number }}</p>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-outline-danger">
+      <i class="bi bi-trash me-1"></i>حذف
+    </a>
+    <a href="{% url 'student_edit' student.pk %}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil me-1"></i> تعديل
+    </a>
+    <a href="{% url 'student_print_card' student.pk %}" target="_blank" class="btn btn-outline-dark btn-sm">
+      <i class="bi bi-printer me-1"></i> طباعة بطاقة
+    </a>
+     {% if student.phone %}
+      <button type="button" class="btn btn-success btn-sm" id="whatsappBtn">
+        <i class="bi bi-whatsapp me-1"></i> إرسال البطاقة
+      </button>
+     {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="table-card p-3">
+      <div class="text-center mb-3">
+        {% if student.photo and student.photo.url %}
+        <div class="student-photo-container mb-2">
+          <img src="{{ student.photo.url }}" alt="{{ student.full_name }}" class="student-photo-img">
+        </div>
+        {% else %}
+        <div class="student-photo-placeholder">
+          <i class="bi bi-person-fill"></i>
+        </div>
+        {% endif %}
+        <span class="status-badge badge-{{ student.status }}">{{ student.get_status_display_ar }}</span>
+      </div>
+      <table class="table table-sm">
+        <tr><td class="text-muted">الاسم الكامل</td><td class="fw-semibold">{{ student.full_name }}</td></tr>
+        <tr><td class="text-muted">اسم الأب</td><td>{{ student.father_name }}</td></tr>
+        <tr><td class="text-muted">الهاتف</td><td dir="ltr">{{ student.phone|default:"—" }}</td></tr>
+        <tr><td class="text-muted">العنوان</td><td>{{ student.address|default:"—" }}</td></tr>
+        <tr><td class="text-muted">الرقم الوطني</td><td dir="ltr">{{ student.nation_number|default:"—" }}</td></tr>
+        <tr><td class="text-muted">رقم الجلوس</td><td dir="ltr">{{ student.id|default:"—" }}</td></tr>
+        <tr><td class="text-muted">القسم</td><td>{{ student.department.name|default:"—" }}</td></tr>
+        <tr><td class="text-muted">التخصص</td><td>{{ student.specialization.name|default:"—" }}</td></tr>
+        <tr><td class="text-muted">تاريخ التسجيل</td><td>{{ student.created_at|date:"Y/m/d" }}</td></tr>
+       </table>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="row g-3 mb-4">
+      <div class="col-4">
+        <div class="stat-card text-center">
+          <p class="stat-label mb-1">إجمالي الرسوم</p>
+          <div class="fw-bold" style="font-size:1.1rem;">{{ total_fees|floatformat:0 }} د.ل</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="stat-card text-center">
+          <p class="stat-label mb-1">إجمالي المدفوع</p>
+          <div class="fw-bold text-success" style="font-size:1.1rem;">{{ total_paid|floatformat:0 }} د.ل</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="stat-card text-center">
+          <p class="stat-label mb-1">الرصيد المتبقي</p>
+          <div class="fw-bold {% if balance > 0 %}text-danger{% else %}text-success{% endif %}" style="font-size:1.1rem;">{{ balance|floatformat:0 }} د.ل</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .student-photo-container {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #d90429;
+    background: #f8f9fa;
+  }
+  
+  .student-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .student-photo-placeholder {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
+  }
+  
+  .student-photo-placeholder i {
+    font-size: 3rem;
+  }
+  
+  @media (max-width: 768px) {
+    .student-photo-container,
+    .student-photo-placeholder {
+      width: 100px;
+      height: 100px;
+    }
+  }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#whatsappBtn').click(function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> جاري...');
+        
+        $.ajax({
+            url: "{% url 'send_whatsapp_pdf' student.pk %}",
+            method: 'GET',
+            success: function(data) {
+                if (data.success) {
+                    window.open(data.whatsapp_url, '_blank');
+                    alert('تم فتح محادثة الواتساب. قم بإرسال الرسالة.');
+                } else {
+                    alert('خطأ: ' + data.error);
+                }
+            },
+            error: function(xhr) {
+                var errorMsg = 'حدث خطأ في الاتصال';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                alert(errorMsg);
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('<i class="bi bi-whatsapp me-1"></i> إرسال PDF للواتساب');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

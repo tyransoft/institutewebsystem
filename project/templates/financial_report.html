@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+{% block title %}التقرير المالي{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>التقرير المالي</h2>
+    <p>إجمالي الإيرادات والمصروفات وصافي الربح</p>
+  </div>
+  
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-5">
+        <label class="form-label small text-muted">من تاريخ</label>
+        <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+      </div>
+      <div class="col-md-5">
+        <label class="form-label small text-muted">إلى تاريخ</label>
+        <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-funnel"></i> فلترة
+        </button>
+      </div>
+    </form>
+    {% if date_from or date_to %}
+    <div class="mt-2">
+      <a href="{% url 'financial_report' %}" class="text-decoration-none small">
+        <i class="bi bi-x-circle"></i> إلغاء الفلترة
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card text-center p-3">
+      <div class="stat-value text-success" style="font-size:1.5rem;">{{ total_revenue_paid|floatformat:0 }} د.ل</div>
+      <p class="stat-label mt-1">الإيرادات المدفوعة</p>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card text-center p-3">
+      <div class="stat-value text-warning" style="font-size:1.5rem;">{{ total_unpaid|floatformat:0 }} د.ل</div>
+      <p class="stat-label mt-1">الإيرادات غير المدفوعة</p>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card text-center p-3">
+      <div class="stat-value text-danger" style="font-size:1.5rem;">{{ total_expenses|floatformat:0 }} د.ل</div>
+      <p class="stat-label mt-1">إجمالي المصروفات</p>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card text-center p-3">
+      <div class="stat-value {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size:1.5rem;">
+        {{ net_profit|floatformat:0 }} د.ل
+      </div>
+      <p class="stat-label mt-1">صافي الربح</p>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <label class="small text-muted mb-1">نسبة تحصيل الإيرادات ({{ collection_rate|floatformat:1 }}%)</label>
+    <div class="progress" style="height:25px;">
+      <div class="progress-bar bg-success" style="width: {{ collection_rate|floatformat:0 }}%">
+        {{ total_revenue_paid|floatformat:0 }} د.ل
+      </div>
+      <div class="progress-bar bg-warning" style="width: {{ collection_rate|floatformat:0 }}%">
+        {{ total_unpaid|floatformat:0 }} د.ل
+      </div>
+    </div>
+    <div class="d-flex justify-content-between mt-2 small">
+      <span class="text-success"> مدفوع ({{ collection_rate|floatformat:1 }}%)</span>
+      <span class="text-warning"> غير مدفوع ({{ collection_rate|floatformat:1 }}%)</span>
+    </div>
+  </div>
+</div>
+
+<div class="table-card mb-4">
+  <div class="p-3 border-bottom fw-bold bg-success bg-opacity-10">
+    سجل المدفوعات
+    <span class="badge bg-success ms-2">{{ payments|length }} عملية</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>رقم الإيصال</th>
+          <th>التاريخ</th>
+          <th>الطالب</th>
+          <th>المبلغ</th>
+          <th>طريقة الدفع</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pay in payments %}
+        <tr>
+          <td dir="ltr" class="font-monospace">{{ pay.receipt_number }}</td>
+          <td dir="ltr">{{ pay.payment_date }}</td>
+          <td>{{ pay.student.full_name }}</td>
+          <td class="text-success fw-semibold">{{ pay.amount|floatformat:0 }} د.ل</td>
+          <td>{{ pay.get_method_display_ar }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">لا توجد مدفوعات في هذه الفترة</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" class="fw-bold">الإجمالي</td>
+          <td class="fw-bold text-success">{{ total_revenue_paid|floatformat:0 }} د.ل</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<div class="table-card mb-4">
+  <div class="p-3 border-bottom fw-bold bg-danger bg-opacity-10">
+    <i class="bi bi-receipt me-2"></i> سجل المصروفات
+    <span class="badge bg-danger ms-2">{{ expenses|length }} عملية</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>التصنيف</th>
+          <th>المبلغ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in expenses %}
+        <tr>
+          <td dir="ltr">{{ exp.expense_date }}</td>
+          <td>{{ exp.category.name|default:"-" }}</td>
+          <td class="text-danger fw-semibold">{{ exp.amount|floatformat:0 }} د.ل</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-4">لا توجد مصروفات في هذه الفترة</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" class="fw-bold">الإجمالي</td>
+          <td class="fw-bold text-danger">{{ total_expenses|floatformat:0 }} د.ل</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<style media="print">
+  .btn, .card form, .no-print {
+    display: none !important;
+  }
+  .stat-card, .table-card {
+    break-inside: avoid;
+    border: 1px solid #ddd !important;
+  }
+  .progress-bar {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+</style>
+{% endblock %}

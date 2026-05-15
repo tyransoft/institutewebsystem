@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>بطاقة الطالب - {{ student.full_name }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #fff; color: #1a2236; }
+@page { size: A4; margin: 1.5cm; }
+@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display: none; } }
+
+.no-print { background: #f5f6fa; padding: 1rem; text-align: center; margin-bottom: 1rem; }
+.no-print button { background: #d90429; color: #fff; border: none; border-radius: 8px; padding: .5rem 1.5rem; font-family: 'Cairo', sans-serif; font-size: .95rem; cursor: pointer; }
+
+.page { padding: 1cm; }
+
+/* Header */
+.header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #d90429; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+.header .logo { width: 60px; height: 60px; border-radius: 12px; background: #d90429; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900; }
+.header .title h1 { font-size: 1.4rem; font-weight: 900; color: #1a2236; }
+.header .title p { font-size: .85rem; color: #6b7280; }
+.header .date { font-size: .8rem; color: #6b7280; text-align: left; }
+
+/* ID Card */
+.id-card { background: linear-gradient(135deg, #d90429, #b50022); color: #fff; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1.5rem; }
+.id-card .avatar { width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: #fff; flex-shrink: 0; }
+.id-card .info h2 { font-size: 1.3rem; font-weight: 900; }
+.id-card .info p { font-size: .88rem; opacity: .9; margin: .2rem 0; }
+.id-card .reg-number { margin-right: auto; text-align: left; }
+.id-card .reg-number .label { font-size: .7rem; opacity: .8; }
+.id-card .reg-number .value { font-size: 1.1rem; font-weight: 700; direction: ltr; }
+
+/* Info Grid */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.info-section h3 { font-size: .95rem; font-weight: 700; color: #d90429; border-bottom: 1px solid #eaecf0; padding-bottom: .4rem; margin-bottom: .8rem; }
+.info-table { width: 100%; font-size: .85rem; }
+.info-table tr td:first-child { color: #6b7280; width: 45%; }
+.info-table tr td:last-child { font-weight: 600; }
+.info-table tr td { padding: .3rem 0; }
+
+/* Financial */
+.financial-summary { background: #f8f9fb; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; }
+.financial-summary h3 { font-size: .95rem; font-weight: 700; color: #d90429; margin-bottom: 1rem; }
+.fin-row { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px dashed #e5e7eb; font-size: .88rem; }
+.fin-row:last-child { border: none; font-weight: 700; font-size: .95rem; color: #d90429; }
+
+/* Tables */
+.section { margin-bottom: 1.5rem; }
+.section h3 { font-size: .95rem; font-weight: 700; color: #1a2236; border-right: 4px solid #d90429; padding-right: .6rem; margin-bottom: .8rem; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+table.data-table thead th { background: #1a2236; color: #fff; padding: .5rem .7rem; text-align: right; }
+table.data-table tbody td { padding: .45rem .7rem; border-bottom: 1px solid #f0f0f0; }
+table.data-table tbody tr:nth-child(even) { background: #fafafa; }
+.badge { padding: .2rem .6rem; border-radius: 20px; font-size: .75rem; font-weight: 600; }
+.badge-paid { background: #d1fae5; color: #065f46; }
+.badge-partial { background: #fef3c7; color: #92400e; }
+.badge-pending { background: #f3f4f6; color: #374151; }
+.badge-overdue { background: #fee2e2; color: #991b1b; }
+
+.footer { text-align: center; font-size: .75rem; color: #9ca3af; border-top: 1px solid #eaecf0; padding-top: 1rem; margin-top: 1rem; }
+</style>
+</head>
+<body>
+<div class="no-print">
+  <button onclick="window.print()">طباعة البطاقة</button>
+  <button onclick="window.history.back()" style="background:#6b7280;margin-right:.5rem;">رجوع</button>
+</div>
+
+<div class="page">
+  <div class="header">
+    <div class="logo">م</div>
+    <div class="title">
+      <h1>نظام إدارة المعهد</h1>
+      <p>بطاقة معلومات الطالب</p>
+    </div>
+    <div class="date">
+      <div>تاريخ الطباعة</div>
+      <div dir="ltr">{{ print_date }}</div>
+    </div>
+  </div>
+
+  <div class="id-card">
+    <div class="avatar">{{ student.full_name|first }}</div>
+    <div class="info">
+      <h2>{{ student.full_name }}</h2>
+      <p>{{ student.department.name|default:"—" }} - {{ student.specialization.name|default:"—" }}</p>
+      <p>العام الدراسي: {{ student.academic_year }}</p>
+    </div>
+    <div class="reg-number">
+      <div class="label">رقم التسجيل</div>
+      <div class="value">{{ student.registration_number }}</div>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-section">
+      <h3>البيانات الشخصية</h3>
+      <table class="info-table">
+        <tr><td>الاسم الكامل</td><td>{{ student.full_name }}</td></tr>
+        <tr><td>اسم الأب</td><td>{{ student.father_name }}</td></tr>
+        <tr><td>الهاتف</td><td dir="ltr">{{ student.phone|default:"—" }}</td></tr>
+        <tr><td>العنوان</td><td>{{ student.address|default:"—" }}</td></tr>
+        <tr><td>رقم المقعد</td><td dir="ltr">{{ student.seat_number|default:"—" }}</td></tr>
+      </table>
+    </div>
+    <div class="info-section">
+      <h3>البيانات الأكاديمية</h3>
+      <table class="info-table">
+        <tr><td>القسم</td><td>{{ student.department.name|default:"—" }}</td></tr>
+        <tr><td>التخصص</td><td>{{ student.specialization.name|default:"—" }}</td></tr>
+        <tr><td>العام الدراسي</td><td dir="ltr">{{ student.academic_year }}</td></tr>
+        <tr><td>رقم التسجيل</td><td dir="ltr">{{ student.registration_number }}</td></tr>
+        <tr><td>الحالة</td><td>{{ student.get_status_display_ar }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="financial-summary">
+    <h3>الملخص المالي</h3>
+    <div class="fin-row"><span>إجمالي الرسوم</span><span>{{ total_fees }}</span></div>
+    <div class="fin-row"><span>إجمالي المدفوع</span><span style="color:#40916c;">{{ total_paid }}</span></div>
+    <div class="fin-row"><span>الرصيد المتبقي</span><span>{{ balance }}</span></div>
+  </div>
+
+  <div class="section">
+    <h3>جدول الأقساط</h3>
+    <table class="data-table">
+      <thead><tr>
+        <th>مبلغ القسط</th><th>المدفوع</th><th>المتبقي</th>
+        <th>تاريخ الاستحقاق</th><th>الحالة</th>
+      </tr></thead>
+      <tbody>
+        {% for inst in installments %}
+        <tr>
+          <td>د.ع {{ inst.amount|floatformat:0 }}</td>
+          <td>د.ع {{ inst.paid_amount|floatformat:0 }}</td>
+          <td>د.ع {{ inst.remaining_amount|floatformat:0 }}</td>
+          <td dir="ltr">{{ inst.due_date }}</td>
+          <td><span class="badge badge-{{ inst.status }}">{{ inst.get_status_display_ar }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:1rem;">لا توجد أقساط</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>سجل المدفوعات</h3>
+    <table class="data-table">
+      <thead><tr>
+        <th>رقم الإيصال</th><th>المبلغ</th><th>التاريخ</th><th>طريقة الدفع</th>
+      </tr></thead>
+      <tbody>
+        {% for pay in payments %}
+        <tr>
+          <td dir="ltr">{{ pay.receipt_number }}</td>
+          <td>د.ع {{ pay.amount|floatformat:0 }}</td>
+          <td dir="ltr">{{ pay.payment_date }}</td>
+          <td>{{ pay.get_method_display_ar }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:1rem;">لا توجد مدفوعات</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <p>نظام إدارة المعهد &mdash; هذه الوثيقة سرية للاستخدام الداخلي فقط</p>
+  </div>
+</div>
+</body>
+</html>

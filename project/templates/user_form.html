@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header d-flex align-items-center gap-3 mb-4">
+        <a href="{% url 'user_list' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-right"></i> رجوع
+        </a>
+        <div>
+            <h2>{{ title }}</h2>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm" style="max-width: 600px;">
+        <div class="card-body p-4">
+            <form method="post" id="userForm">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% if not is_update %}
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold">
+                        {{ form.username.label }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                    <div class="text-muted small mt-1">أحرف، أرقام و @/./+/-/_ فقط.</div>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label fw-semibold">
+                        {{ form.first_name.label }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+             
+                
+                <div class="mb-3">
+                    <label for="{{ form.premission.id_for_label }}" class="form-label fw-semibold">
+                        {{ form.premission.label }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    {{ form.premission }}
+                    {% if form.premission.errors %}
+                        <div class="text-danger small mt-1">{{ form.premission.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                {% if not is_update %}
+                <div class="mb-3">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label fw-semibold">
+                        {{ form.password1.label }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+                    {% endif %}
+                    <div class="text-muted small mt-1">
+                        <ul class="mb-0 ps-3">
+                            <li>لا يمكن أن تكون كلمة المرور مشابهة للبيانات الشخصية.</li>
+                            <li>يجب أن تحتوي على 8 أحرف على الأقل.</li>
+                            <li>لا يمكن أن تكون كلمة مرور شائعة الاستخدام.</li>
+                            <li>لا يمكن أن تكون رقمية بالكامل.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label fw-semibold">
+                        {{ form.password2.label }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <hr class="my-4">
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg me-1"></i> حفظ
+                    </button>
+                    <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i> إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+    }
+    
+    .form-label .text-danger {
+        font-size: 1.2em;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.querySelector('#{{ form.username.id_for_label|default:"id_username" }}');
+        if (usernameInput) {
+            usernameInput.placeholder = 'أدخل اسم المستخدم';
+        }
+        
+        const fullNameInput = document.querySelector('#{{ form.first_name.id_for_label|default:"id_first_name" }}');
+        if (fullNameInput) {
+            fullNameInput.placeholder = 'الأسم الثلاثي';
+        }
+        
+        const emailInput = document.querySelector('#{{ form.email.id_for_label|default:"id_email" }}');
+        if (emailInput) {
+            emailInput.placeholder = 'example@domain.com';
+        }
+        
+        const form = document.getElementById('userForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const password1 = document.querySelector('#id_password1');
+                const password2 = document.querySelector('#id_password2');
+                if (password1 && password2 && password1.value !== password2.value) {
+                    e.preventDefault();
+                    alert('كلمتا المرور غير متطابقتين');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}التقارير{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>التقارير</h2>
+  <p>مركز التحليل والتقارير</p>
+</div>
+<div class="row g-4">
+  <div class="col-md-4">
+    <a href="{% url 'financial_report' %}" class="text-decoration-none">
+      <div class="stat-card h-100 d-flex flex-column align-items-center justify-content-center py-5" style="cursor:pointer;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(217,4,41,.15)'" onmouseout="this.style.boxShadow=''">
+        <div class="stat-icon bg-primary bg-opacity-10 text-primary mb-3" style="width:60px;height:60px;border-radius:14px;font-size:1.8rem;">
+          <i class="bi bi-file-earmark-bar-graph"></i>
+        </div>
+        <h5 class="fw-bold mb-1">التقرير المالي</h5>
+        <p class="text-muted small mb-0">الإيرادات والمصروفات حسب الفترة</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{% url 'debts_report' %}" class="text-decoration-none">
+      <div class="stat-card h-100 d-flex flex-column align-items-center justify-content-center py-5" style="cursor:pointer;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(217,4,41,.15)'" onmouseout="this.style.boxShadow=''">
+        <div class="stat-icon mb-3" style="width:60px;height:60px;border-radius:14px;background:#fee2e2;color:#991b1b;font-size:1.8rem;display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <h5 class="fw-bold mb-1">تقرير الديون</h5>
+        <p class="text-muted small mb-0">قائمة الطلاب المتأخرين عن السداد</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{% url 'students_report' %}" class="text-decoration-none">
+      <div class="stat-card h-100 d-flex flex-column align-items-center justify-content-center py-5" style="cursor:pointer;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(64,145,108,.15)'" onmouseout="this.style.boxShadow=''">
+        <div class="stat-icon mb-3" style="width:60px;height:60px;border-radius:14px;background:rgba(64,145,108,.12);color:#40916c;font-size:1.8rem;display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-people"></i>
+        </div>
+        <h5 class="fw-bold mb-1">إحصاءات الطلاب</h5>
+        <p class="text-muted small mb-0">توزيع الطلاب على الأقسام والسنوات</p>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}

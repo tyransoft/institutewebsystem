@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}تقرير الديون{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+  <div class="d-flex align-items-center gap-3">
+    <a href="{% url 'reports' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-right"></i>
+    </a>
+    <div>
+      <h2>تقرير الديون</h2>
+      <p>قائمة الطلاب المتأخرين عن السداد</p>
+    </div>
+  </div>
+  <div class="stat-card px-4 py-2">
+    <span class="text-muted small">إجمالي الديون: </span>
+    <span class="fw-bold text-danger">{{ total_debt|floatformat:0 }} د.ل</span>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-10">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" name="search" class="form-control" 
+                 placeholder="البحث باسم الطالب أو رقم القيد..." 
+                 value="{{ search_query }}">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-search me-1"></i> بحث
+        </button>
+      </div>
+    </form>
+    
+    {% if search_query %}
+    <div class="mt-3">
+      <div class="alert alert-info alert-dismissible fade show mb-0 py-2">
+        <i class="bi bi-info-circle me-1"></i>
+        نتائج البحث عن: <strong>"{{ search_query }}"</strong>
+        <a href="{% url 'debts_report' %}" class="float-end text-decoration-none">
+          <i class="bi bi-x-circle"></i> إلغاء البحث
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الطالب</th>
+          <th>رقم القيد</th>
+          <th>إجمالي الرسوم</th>
+          <th>المدفوع</th>
+          <th>الرصيد المتبقي</th>
+          <th>أقساط متأخرة</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in debtors %}
+        <tr>
+          <td class="text-muted">{{ forloop.counter }}</td>
+          <td>
+            <a href="{% url 'student_detail' d.student.pk %}" class="fw-semibold text-decoration-none">
+              {{ d.student.full_name }}
+            </a>
+            <div class="text-muted small">{{ d.student.department.name|default:"—" }}</div>
+          </td>
+          <td dir="ltr" class="font-monospace">{{ d.student.registration_number }}</td>
+          <td>{{ d.total_fees|floatformat:0 }} د.ل</td>
+          <td class="text-success">{{ d.total_paid|floatformat:0 }} د.ل</td>
+          <td class="text-danger fw-bold">{{ d.balance|floatformat:0 }} د.ل</td>
+          <td>
+            {% if d.overdue_count > 0 %}
+            <span class="status-badge badge-overdue">{{ d.overdue_count }} قسط</span>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            {% if search_query %}
+              لا توجد نتائج بحث مطابقة لـ "{{ search_query }}"
+            {% else %}
+              لا يوجد طلاب متأخرون عن السداد
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if debtors %}
+      <tfoot class="table-light">
+        <tr>
+          <td colspan="5" class="fw-bold">الإجمالي</td>
+          <td class="fw-bold text-danger">{{ total_debt|floatformat:0 }} د.ل</td>
+          <td></td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+{% if debtors %}
+<div class="row g-3 mt-2">
+  <div class="col-md-4">
+    <div class="stat-card text-center p-2">
+      <small class="text-muted">عدد الطلاب المدينين</small>
+      <div class="fw-bold fs-5">{{ debtors|length }}</div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="stat-card text-center p-2">
+      <small class="text-muted">أعلى دين</small>
+      <div class="fw-bold fs-5">{{ debtors.0.balance|floatformat:0 }} د.ل</div>
+      <small class="text-muted">{{ debtors.0.student.full_name }}</small>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

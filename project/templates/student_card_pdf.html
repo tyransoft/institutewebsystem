@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>بطاقة الطالب - {{ student.full_name }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1cm;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
+      background: white;
+      direction: rtl;
+    }
+    
+    .card-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .student-card {
+      width: 350px;
+      background: white;
+      border-radius: 15px;
+      border: 2px solid #d90429;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, #d90429 0%, #8b0000 100%);
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .card-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    
+    .card-header p {
+      margin: 5px 0 0;
+      font-size: 12px;
+    }
+    
+    .card-body {
+      padding: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    
+    .photo-section {
+      text-align: center;
+      flex-shrink: 0;
+    }
+    
+    .student-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #d90429;
+      background: #f0f0f0;
+      margin-bottom: 5px;
+    }
+    
+    .student-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .no-photo {
+      width: 100px;
+      height: 100px;
+      background: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: #adb5bd;
+    }
+    
+    .info-section {
+      flex: 1;
+    }
+    
+    .info-row {
+      margin-bottom: 8px;
+      font-size: 11px;
+      border-bottom: 1px dotted #eee;
+      padding-bottom: 5px;
+    }
+    
+    .info-label {
+      font-weight: bold;
+      color: #555;
+      display: inline-block;
+      min-width: 70px;
+    }
+    
+    .info-value {
+      color: #333;
+    }
+    
+    .qr-code {
+      text-align: center;
+      margin-top: 10px;
+    }
+    
+    .qr-code img {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .card-footer {
+      background: #f8f9fa;
+      padding: 10px;
+      text-align: center;
+      font-size: 9px;
+      color: #666;
+      border-top: 1px solid #ddd;
+    }
+    
+    .footer-text {
+      margin: 3px 0;
+    }
+    
+    .stamp {
+      margin-top: 10px;
+      text-align: left;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card-container">
+    <div class="student-card">
+      <div class="card-header">
+        <h3>{{ school_name }}</h3>
+        <p>بطاقة تعريف طالب</p>
+      </div>
+      
+      <div class="card-body">
+        <div class="photo-section">
+          <div class="student-photo">
+            {% if student.photo and student.photo.url %}
+            <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+            {% else %}
+            <div class="no-photo"></div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="info-section">
+          <div class="info-row">
+            <span class="info-label">الاسم:</span>
+            <span class="info-value">{{ student.full_name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">اسم الأب:</span>
+            <span class="info-value">{{ student.father_name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">رقم القيد:</span>
+            <span class="info-value">{{ student.registration_number }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label"> رقم الجلوس:</span>
+            <span class="info-value">{{ student.id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">القسم:</span>
+            <span class="info-value">{{ student.department.name|default:"-" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">التخصص:</span>
+            <span class="info-value">{{ student.specialization.name|default:"-" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">العام الدراسي:</span>
+            <span class="info-value">{{ student.academic_year }}</span>
+          </div>
+        </div>
+      </div>
+      
+
+      
+      
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>كشف بأسماء الطلبة - {{ department_name }}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+      background: white;
+      padding: 20px;
+      font-size: 12px;
+    }
+    
+    @page {
+      size: A4;
+      margin: 1.5cm;
+      @top-center {
+        content: "كشف بأسماء الطلبة";
+        font-size: 12px;
+        font-weight: bold;
+      }
+      @bottom-center {
+        content: "صفحة " counter(page) " من " counter(pages);
+        font-size: 10px;
+      }
+    }
+    
+    .report-header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #d90429;
+      padding-bottom: 15px;
+    }
+    
+    .report-header h1 {
+      font-size: 20px;
+      color: #d90429;
+      margin-bottom: 5px;
+    }
+    
+    .report-header h3 {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .report-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-size: 11px;
+    }
+    
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    
+    .report-table th {
+      background: #d90429;
+      color: white;
+      padding: 10px 8px;
+      font-weight: bold;
+      font-size: 11px;
+      text-align: center;
+      border: 1px solid #b50022;
+    }
+    
+    .report-table td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 11px;
+    }
+    
+    .report-table tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    
+    .report-table tr:hover {
+      background: #f0f0f0;
+    }
+    
+    .report-footer {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+      font-size: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .page-break {
+      page-break-before: always;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      .report-table th {
+        background: #d90429 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .report-info {
+        background: #f8f9fa !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+       }
+
+
+  </style>
+</head>
+<body>
+  <div class="report-header">
+    <h1>معهد الجبل العالي</h1>
+    <h3>كشف بأسماء الطلبة</h3>
+    <h4>{{ department_name }}</h4>
+  </div>
+  
+  <div class="report-info">
+    <span><strong>تاريخ الطباعة:</strong> {{ print_date|date:"Y/m/d - h:i A" }}</span>
+    <span><strong>عدد الطلاب:</strong> {{ total_count }} طالب/طلبة</span>
+  </div>
+  
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        {% if 'full_name' in selected_fields %}<th>اسم الطالب</th>{% endif %}
+        {% if 'registration_number' in selected_fields %}<th>رقم القيد</th>{% endif %}
+        {% if 'id' in selected_fields %}<th>رقم الجلوس</th>{% endif %}
+        {% if 'phone' in selected_fields %}<th>رقم الهاتف</th>{% endif %}
+        {% if 'department' in selected_fields %}<th>القسم</th>{% endif %}
+        {% if 'specialization' in selected_fields %}<th>التخصص</th>{% endif %}
+        {% if 'total_paid' in selected_fields %}<th>إجمالي المدفوعات</th>{% endif %}
+        {% if 'remaining' in selected_fields %}<th>الدين المتبقي</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        {% if 'full_name' in selected_fields %}<td style="text-align:right">{{ student.full_name }}</td>{% endif %}
+        {% if 'registration_number' in selected_fields %}<td dir="ltr">{{ student.registration_number }}</td>{% endif %}
+        {% if 'id' in selected_fields %}<td dir="ltr">{{ student.id }}</td>{% endif %}
+        {% if 'phone' in selected_fields %}<td dir="ltr">{{ student.phone }}</td>{% endif %}
+        {% if 'department' in selected_fields %}<td style="text-align:right">{{ student.department }}</td>{% endif %}
+        {% if 'specialization' in selected_fields %}<td style="text-align:right">{{ student.specialization }}</td>{% endif %}
+        {% if 'total_paid' in selected_fields %}<td>{{ student.total_paid|floatformat:0 }} د.ل</td>{% endif %}
+        {% if 'remaining' in selected_fields %}<td>{{ student.remaining|floatformat:0 }} د.ل</td>{% endif %}
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="20" style="text-align:center">لا توجد بيانات للعرض</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+
+  
+  <script>
+    window.onload = function() {
+      window.print();
+    };
+  </script>
+</body>
+</html>

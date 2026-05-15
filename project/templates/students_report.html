@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}إحصاءات الطلاب{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex align-items-center gap-3">
+  <a href="{% url 'reports' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i>
+  </a>
+  <div>
+    <h2>إحصاءات الطلاب</h2>
+    <p>توزيع الطلاب على الأقسام والتخصصات</p>
+  </div>
+</div>
+
+<!-- بطاقات الإحصائيات -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card text-center p-4">
+      <div class="stat-icon mx-auto mb-3" style="width:60px;height:60px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-people-fill fs-2 text-success"></i>
+      </div>
+      <div class="stat-value" style="font-size:2rem;">{{ total }}</div>
+      <p class="stat-label mt-2">إجمالي الطلاب</p>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card text-center p-4">
+      <div class="stat-icon mx-auto mb-3" style="width:60px;height:60px;background:#dbeafe;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-building fs-2 text-primary"></i>
+      </div>
+      <div class="stat-value" style="font-size:2rem;">{{ departments_count|default:0 }}</div>
+      <p class="stat-label mt-2">الأقسام</p>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card text-center p-4">
+      <div class="stat-icon mx-auto mb-3" style="width:60px;height:60px;background:#fed7aa;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-bookmark-fill fs-2 text-warning"></i>
+      </div>
+      <div class="stat-value" style="font-size:2rem;">{{ specializations_count|default:0 }}</div>
+      <p class="stat-label mt-2">التخصصات</p>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card text-center p-4">
+      <div class="stat-icon mx-auto mb-3" style="width:60px;height:60px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-printer fs-2 text-danger"></i>
+      </div>
+      <p class="stat-label mt-2 mb-2">طباعة كشوفات</p>
+      <a href="{% url 'students_report_print' %}" class="btn btn-sm btn-outline-danger">
+        <i class="bi bi-printer me-1"></i> طباعة
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- الجداول -->
+<div class="row g-4">
+  <!-- توزيع الطلاب على الأقسام -->
+  <div class="col-md-6">
+    <div class="table-card">
+      <div class="p-3 border-bottom fw-bold bg-primary bg-opacity-10">
+        <i class="bi bi-pie-chart me-2"></i> توزيع الطلاب على الأقسام
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>القسم</th>
+              <th class="text-center">عدد الطلاب</th>
+              <th class="text-center">النسبة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dept in by_department %}
+            <tr>
+              <td>
+                <i class="bi bi-building me-2 text-primary"></i>
+                {{ dept.name }}
+              </td>
+              <td class="text-center">
+                <span class="badge bg-primary">{{ dept.cnt }}</span>
+              </td>
+              <td class="text-center" style="min-width: 120px;">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height:6px;">
+                    <div class="progress-bar bg-danger" style="width:{% widthratio dept.cnt total 100 %}%"></div>
+                  </div>
+                  <small class="text-muted">{% widthratio dept.cnt total 100 %}%</small>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                لا توجد أقسام
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="table-light">
+              <td class="fw-bold">الإجمالي</td>
+              <td class="text-center fw-bold">{{ total }}</td>
+              <td class="text-center">100%</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- توزيع الطلاب على التخصصات -->
+  <div class="col-md-6">
+    <div class="table-card">
+      <div class="p-3 border-bottom fw-bold bg-success bg-opacity-10">
+        <i class="bi bi-tags me-2"></i> توزيع الطلاب على التخصصات
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>التخصص</th>
+              <th class="text-center">عدد الطلاب</th>
+              <th class="text-center">النسبة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for spec in by_specialization %}
+            <tr>
+              <td>
+                <i class="bi bi-bookmark me-2 text-success"></i>
+                {{ spec.name }}
+              </td>
+              <td class="text-center">
+                <span class="badge bg-success">{{ spec.cnt }}</span>
+              </td>
+              <td class="text-center" style="min-width: 120px;">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height:6px;">
+                    <div class="progress-bar bg-success" style="width:{% widthratio spec.cnt total 100 %}%"></div>
+                  </div>
+                  <small class="text-muted">{% widthratio spec.cnt total 100 %}%</small>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                لا توجد تخصصات
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="table-light">
+              <td class="fw-bold">الإجمالي</td>
+              <td class="text-center fw-bold">{{ total }}</td>
+              <td class="text-center">100%</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %}

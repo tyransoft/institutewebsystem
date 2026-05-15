@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>لوحة القيادة</h2>
+    <p>ملخص عام لأداء المعهد</p>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-people"></i></div>
+        <div>
+          <div class="stat-value">{{ total_students }}</div>
+          <p class="stat-label">إجمالي الطلاب</p>
+          <p class="stat-sub">+{{ new_this_month }} هذا الشهر</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-person-check"></i></div>
+        <div>
+          <div class="stat-value">{{ active_students }}</div>
+          <p class="stat-label">الطلاب النشطون</p>
+          <p class="stat-sub">من إجمالي المسجلين</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-wallet2"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:1rem;">{{ total_revenue }}</div>
+          <p class="stat-label">إجمالي الإيرادات</p>
+          <p class="stat-sub">{{ revenue_this_month }} هذا الشهر</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:rgba(64,145,108,.12);color:#40916c;"><i class="bi bi-graph-up-arrow"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:1rem;">{{ net_profit }}</div>
+          <p class="stat-label">صافي الأرباح</p>
+          <p class="stat-sub">المصروفات: {{ total_expenses }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if overdue_count > 0 %}
+<div class="alert" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:10px;" role="alert">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+  يوجد <strong>{{ overdue_count }}</strong> قسط متأخر بإجمالي <strong>{{ overdue_amount }}</strong>
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="table-card p-3">
+      <h6 class="fw-bold mb-3">الإيرادات والمصروفات الشهرية</h6>
+      <canvas id="revenueChart" height="100"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="table-card p-3">
+      <h6 class="fw-bold mb-3">توزيع الطلاب على الأقسام</h6>
+      <canvas id="deptChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="table-card">
+      <div class="p-3 border-bottom d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history text-success"></i>
+        <h6 class="fw-bold mb-0">أحدث المدفوعات</h6>
+      </div>
+      {% for pay in recent_payments %}
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+        <div>
+          <div class="fw-semibold" style="font-size:.87rem;">{{ pay.student.full_name }}</div>
+          <div class="text-muted" style="font-size:.75rem;">{{ pay.receipt_number }} • {{ pay.payment_date }}</div>
+        </div>
+        <span class="text-success fw-bold" style="font-size:.9rem;"> {{ pay.amount|floatformat:0 }} د.ل</span>
+      </div>
+      {% empty %}
+      <p class="text-muted text-center py-3">لا توجد مدفوعات حديثة</p>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="table-card">
+      <div class="p-3 border-bottom d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle text-danger"></i>
+        <h6 class="fw-bold mb-0">أقساط متأخرة</h6>
+      </div>
+      {% for inst in overdue_installments %}
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+        <div>
+          <div class="fw-semibold" style="font-size:.87rem;">{{ inst.student.full_name }}</div>
+          <div class="text-muted" style="font-size:.75rem;">استحقاق: {{ inst.due_date }}</div>
+        </div>
+        <span class="text-danger fw-bold" style="font-size:.9rem;">د.ع {{ inst.remaining_amount|floatformat:0 }}</span>
+      </div>
+      {% empty %}
+      <p class="text-muted text-center py-3">لا توجد أقساط متأخرة</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const monthlyData = {{ monthly_data|safe }};
+const labels = monthlyData.map(d => d.month);
+const revenues = monthlyData.map(d => d.revenue);
+const expenses = monthlyData.map(d => d.expenses);
+
+new Chart(document.getElementById('revenueChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'الإيرادات', data: revenues, borderColor: '#d90429', backgroundColor: 'rgba(217,4,41,.08)', fill: true, tension: .4 },
+      { label: 'المصروفات', data: expenses, borderColor: '#40916c', backgroundColor: 'rgba(64,145,108,.08)', fill: true, tension: .4 }
+    ]
+  },
+  options: {
+    responsive: true, plugins: { legend: { position: 'bottom' } },
+    scales: {
+      y: { ticks: { callback: v => (v/1000000).toFixed(1)+'M' } }
+    }
+  }
+});
+
+const deptData = {{ dept_breakdown|safe }};
+if (deptData.length > 0) {
+  new Chart(document.getElementById('deptChart'), {
+    type: 'doughnut',
+    data: {
+      labels: deptData.map(d => d.name),
+      datasets: [{ data: deptData.map(d => d.cnt), backgroundColor: ['#d90429','#40916c','#2c3e50','#e9c46a'] }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo', size: 11 } } } } }
+  });
+}
+</script>
+{% endblock %}

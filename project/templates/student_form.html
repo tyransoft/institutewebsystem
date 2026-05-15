@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}تعديل بيانات الطالب{% else %}إضافة طالب جديد{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header d-flex align-items-center gap-3">
+  <a href="{% url 'student_list' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right"></i></a>
+  <div>
+    <h2>{% if object %}تعديل بيانات: {{ object.full_name }}{% else %}إضافة طالب جديد{% endif %}</h2>
+  </div>
+</div>
+<div class="table-card p-4" style="max-width:800px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.full_name.label }}</label>
+        {{ form.full_name }}
+        {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.father_name.label }}</label>
+        {{ form.father_name }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.nation_number.label }}</label>
+        {{ form.nation_number }}
+        {% if form.nation_number.errors %}<div class="text-danger small mt-1">{{ form.nation_number.errors.0 }}</div>{% endif %}
+      </div>
+     
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.phone.label }}</label>
+        {{ form.phone }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.department.label }}</label>
+        {{ form.department }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.specialization.label }}</label>
+        {{ form.specialization }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.status.label }}</label>
+        {{ form.status }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ form.address.label }}</label>
+        {{ form.address }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold ">{{ form.photo.label }}</label>
+        {{ form.photo }}
+      </div>
+    </div>
+    <hr class="my-3">
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary px-4">
+        <i class="bi bi-check-lg me-1"></i> حفظ
+      </button>
+      <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

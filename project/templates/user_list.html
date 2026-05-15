@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}المستخدمون{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div><h2>إدارة المستخدمين</h2><p>صلاحيات وحسابات المستخدمين</p></div>
+  <a href="{% url 'user_add' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> إضافة مستخدم
+  </a>
+</div>
+<div class="table-card">
+  <table class="table table-hover mb-0">
+    <thead><tr>
+      <th>المستخدم</th>
+      <th>اسم الدخول</th>
+      <th>الصلاحية</th>
+      <th>الإجراءات</th>
+    </tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(217,4,41,.1);color:#d90429;display:flex;align-items:center;justify-content:center;font-weight:700;">
+              {{ u.user.first_name }}
+            </div>
+            
+          </div>
+        </td>
+        <td dir="ltr" class="font-monospace">{{ u.user.username }}</td>
+        <td>
+          <span class="badge" style="background:rgba(217,4,41,.1);color:#d90429;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:600;">
+            {{ u.get_role_display_ar }}
+          </span>
+        </td>
+
+        <td>
+          <div class="d-flex gap-1">
+            <a href="{% url 'user_edit' u.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            {% if u.pk != request.user.pk %}
+            <a href="{% url 'user_delete' u.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-center text-muted py-4">لا يوجد مستخدمون</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

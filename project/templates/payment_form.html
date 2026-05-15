@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}تسديد دفعة{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex align-items-center gap-3">
+  <a href="{% url 'finance' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i>
+  </a>
+  <div>
+    <h2>تسديد دفعة</h2>
+    <p>تسديد دفعة لقسط شهري</p>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="table-card p-4">
+      
+      {% if monthly_installment %}
+      <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between mb-2">
+          <span><strong>الطالب:</strong> {{ monthly_installment.student.full_name }}</span>
+          <span><strong>رقم القيد:</strong> {{ monthly_installment.student.registration_number }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span><strong>القسط الشهري:</strong> {{ monthly_installment.amount|floatformat:0 }} د.ل</span>
+          <span><strong>الشهر:</strong> {{ monthly_installment.month_number }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span><strong>المتبقي في هذا القسط:</strong> 
+            <span class="text-danger fw-bold">{{ remaining_amount|floatformat:0 }} د.ل</span>
+          </span>
+          <span><strong>إجمالي الدين المتبقي:</strong> 
+            <span class="text-danger fw-bold">{{ total_remaining|floatformat:0 }} د.ل</span>
+          </span>
+        </div>
+        <hr class="my-2">
+        <div class="small text-muted">
+          <i class="bi bi-info-circle"></i> يمكنك دفع مبلغ أكبر من القسط الشهري، وسيتم توزيعه تلقائياً على الأقساط التالية
+        </div>
+      </div>
+      {% endif %}
+      
+      <form method="post">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+          {% if field.help_text %}<div class="text-muted small mt-1">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        
+        <hr class="my-3">
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-lg me-1"></i> تسجيل الدفعة
+          </button>
+          <a href="{% url 'finance' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-1"></i> إلغاء
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

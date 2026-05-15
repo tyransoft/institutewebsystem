@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}الأقسام والتخصصات{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div><h2>الأقسام والتخصصات</h2><p>إدارة الهيكل الأكاديمي للمعهد</p></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'specialization_add' %}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i> إضافة تخصص
+    </a>
+    <a href="{% url 'department_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i> إضافة قسم
+    </a>
+  </div>
+</div>
+<div class="row g-4">
+  {% for dept in departments %}
+  <div class="col-md-6">
+    <div class="table-card">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(217,4,41,.1);color:#d90429;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-building"></i>
+          </div>
+          <div>
+            <div class="fw-bold">{{ dept.name }}</div>
+            <small class="text-muted">{{ dept.student_count }} طالب • {{ dept.specialization_count }} تخصص</small>
+          </div>
+        </div>
+        <div class="d-flex gap-1">
+          <a href="{% url 'department_edit' dept.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'department_delete' dept.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+        </div>
+      </div>
+      {% for spec in dept.specializations.all %}
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <div style="width:6px;height:6px;border-radius:50%;background:#d90429;"></div>
+          <span style="font-size:.88rem;">{{ spec.name }}</span>
+        </div>
+        <div class="d-flex gap-1">
+          <a href="{% url 'specialization_edit' spec.pk %}" class="btn btn-sm btn-outline-primary" style="font-size:.75rem;padding:.2rem .5rem;"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'specialization_delete' spec.pk %}" class="btn btn-sm btn-outline-danger" style="font-size:.75rem;padding:.2rem .5rem;"><i class="bi bi-trash"></i></a>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted text-center py-3 small">لا توجد تخصصات</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><p class="text-center text-muted py-5">لا توجد أقسام مضافة بعد</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

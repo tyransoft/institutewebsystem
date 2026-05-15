@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-1b+*jp-8shm%^$221fkbcx4ahj&#e9hk_c^=*jhzo684@)75a2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['env-2221391.tip2.libyanspider.cloud']
 
 
 # Application definition
@@ -116,7 +116,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-SITE_DOMAIN = 'http://127.0.0.1:8000'
+SITE_DOMAIN = 'env-2221391.tip2.libyanspider.cloud/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 

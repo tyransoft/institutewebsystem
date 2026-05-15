@@ -130,3 +130,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SITE_NAME = 'معهد الجبل العالي للعلوم الطبية'
 SITE_LOGO = 'images/logo.png' 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

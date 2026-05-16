@@ -28,8 +28,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['django.tip2.libyanspider.cloud']
 
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://django.tip2.libyanspider.cloud",
+]
 # Application definition
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 INSTALLED_APPS = [
     'django.contrib.admin',

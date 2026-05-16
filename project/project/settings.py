@@ -77,9 +77,9 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'jabal_institute',
+        'NAME': 'jabal_institute1',
         'USER': 'webadmin',
-        'PASSWORD': 'NTZpsl19631',
+        'PASSWORD': 'LEEqsp92584',
         'HOST': '10.7.6.115',
         'PORT': '5432',
     }

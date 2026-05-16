@@ -34,7 +34,7 @@ def user_login(request):
          if user is not None:
            login(request,user)
            messages.success(request,'تم تسجيل الدخول بنجاح')
-           return redirect('home')
+           return redirect('dashboard')
       else:
          messages.error(request,'اسم المستخدم وكلمة المرور بيانات مطلوبة')
          return redirect('user_login')

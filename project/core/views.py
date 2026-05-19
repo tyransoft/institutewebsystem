@@ -329,7 +329,9 @@ def student_add(request):
             return redirect('student_list')
     else:
         form = StudentForm()
-    return render(request, 'student_form.html', {'form': form})
+    semesters=AcademicSemester.objects.all()    
+    return render(request, 'student_form.html', {'form': form,'semesters':semesters})
+
 
 
 @login_required

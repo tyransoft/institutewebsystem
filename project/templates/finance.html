@@ -143,9 +143,7 @@
           </td>
           <td>
             <div class="d-flex gap-1">
-              <a href="{% url 'installment_edit' inst.pk %}" class="btn btn-sm btn-outline-primary" title="تعديل">
-                <i class="bi bi-pencil"></i>
-              </a>
+              
               
               {% if inst.remaining_amount > 0 %}
               <a href="{% url 'installment_payment_add' inst.pk %}" class="btn btn-sm btn-success" title="تسديد">

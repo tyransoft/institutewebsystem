@@ -5,5 +5,5 @@ from .models import *
 admin.site.register(SystemUser)
 admin.site.register(Student)
 admin.site.register(StudentInstallment)
-admin.site.register(MonthlyInstallment)
+admin.site.register(AcademicSemester)
 admin.site.register(Payment)

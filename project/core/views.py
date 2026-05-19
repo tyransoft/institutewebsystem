@@ -220,6 +220,54 @@ def specialization_delete(request, pk):
         return redirect('department_list')
     return render(request, 'confirm_delete.html', {'object': specialization})
 
+@login_required
+def semester_list(request):
+    semesters = AcademicSemester.objects.all().order_by('-start_date')
+    return render(request, 'semester_list.html', {'semesters': semesters})
+
+
+@login_required
+def semester_add(request):
+    if request.method == 'POST':
+        form = SemesterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'تم إضافة الفصل الدراسي بنجاح')
+            return redirect('semester_list')
+        else:
+            messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
+    else:
+        form = SemesterForm()
+    
+    return render(request, 'semester_form.html', {'form': form, 'title': 'إضافة فصل دراسي'})
+
+
+@login_required
+def semester_edit(request, pk):
+    semester = get_object_or_404(AcademicSemester, pk=pk)
+    if request.method == 'POST':
+        form = SemesterForm(request.POST, instance=semester)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'تم تحديث الفصل الدراسي بنجاح')
+            return redirect('semester_list')
+        else:
+            messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
+    else:
+        form = SemesterForm(instance=semester)
+    
+    return render(request, 'semester_form.html', {'form': form, 'title': 'تعديل فصل دراسي'})
+
+
+@login_required
+def semester_delete(request, pk):
+    semester = get_object_or_404(AcademicSemester, pk=pk)
+    if request.method == 'POST':
+        semester.delete()
+        messages.success(request, 'تم حذف الفصل الدراسي بنجاح')
+        return redirect('semester_list')
+    
+    return render(request, 'confirm_delete.html', {'object': semester})
 
 @login_required
 def student_list(request):
@@ -472,14 +520,10 @@ def number_to_words(number):
 def finance(request):
     status_filter = request.GET.get('status', '')
     search_query = request.GET.get('search', '')
+    semester_filter = request.GET.get('semester', '')
     tab = request.GET.get('tab', 'installments')
     
-    monthly_status_filter = request.GET.get('monthly_status', '')
-    monthly_search = request.GET.get('monthly_search', '')
-    monthly_date_from = request.GET.get('monthly_date_from', '')
-    monthly_date_to = request.GET.get('monthly_date_to', '')
-    
-    installments = StudentInstallment.objects.select_related('student').order_by('due_date')
+    installments = StudentInstallment.objects.select_related('student', 'semester').order_by('due_date')
     
     if search_query and tab == 'installments':
         installments = installments.filter(
@@ -490,80 +534,24 @@ def finance(request):
     if status_filter:
         installments = installments.filter(status=status_filter)
     
-    payments = Payment.objects.select_related('student').order_by('-payment_date')
+    if semester_filter:
+        installments = installments.filter(semester_id=semester_filter)
     
-    if tab == 'payments':
-        payment_search = request.GET.get('search', '')
-        payment_date_from = request.GET.get('date_from', '')
-        payment_date_to = request.GET.get('date_to', '')
-        
-        if payment_search:
-            payments = payments.filter(
-                Q(student__full_name__icontains=payment_search) |
-                Q(receipt_number__icontains=payment_search)
-            )
-        
-        if payment_date_from:
-            payments = payments.filter(payment_date__gte=payment_date_from)
-        if payment_date_to:
-            payments = payments.filter(payment_date__lte=payment_date_to)
-    else:
-        payments = payments[:30]
+    payments = Payment.objects.select_related('student', 'installment').order_by('-payment_date')[:30]
     
-    monthly_installments = MonthlyInstallment.objects.select_related('student', 'master_installment')
-    
-    if monthly_search:
-        monthly_installments = monthly_installments.filter(
-            Q(student__full_name__icontains=monthly_search) |
-            Q(student__registration_number__icontains=monthly_search)
-        )
-    
-    if monthly_date_from:
-        monthly_installments = monthly_installments.filter(due_date__gte=monthly_date_from)
-    if monthly_date_to:
-        monthly_installments = monthly_installments.filter(due_date__lte=monthly_date_to)
-    
-    today = date.today()
-    if monthly_status_filter == 'paid':
-        monthly_installments = monthly_installments.filter(status='paid')
-    elif monthly_status_filter == 'overdue':
-        monthly_installments = monthly_installments.filter(
-            status__in=['pending', 'partial'],
-            due_date__lt=today
-        )
-    elif monthly_status_filter == 'pending':
-        monthly_installments = monthly_installments.filter(
-            status__in=['pending', 'partial'],
-            due_date__gte=today
-        )
-    elif monthly_status_filter == 'all':
-        pass
-    
-    monthly_installments = monthly_installments.order_by('due_date')
-    
-    today_date = timezone.now().date()
-    first_day_month = today_date.replace(day=1)
-    if today_date.month == 12:
-        last_day_month = today_date.replace(year=today_date.year+1, month=1, day=1) - timedelta(days=1)
-    else:
-        last_day_month = today_date.replace(month=today_date.month+1, day=1) - timedelta(days=1)
+    semesters = AcademicSemester.objects.all().order_by('-start_date')
     
     context = {
         'installments': installments,
         'payments': payments,
-        'monthly_installments': monthly_installments,
         'status_filter': status_filter,
         'search_query': search_query,
+        'semester_filter': semester_filter,
+        'semesters': semesters,
         'current_tab': tab,
-        'today': today_date,
-        'first_day_month': first_day_month,
-        'last_day_month': last_day_month,
-        'monthly_status_filter': monthly_status_filter,
-        'monthly_search': monthly_search,
-        'monthly_date_from': monthly_date_from,
-        'monthly_date_to': monthly_date_to,
     }
     return render(request, 'finance.html', context)
+
 
 
 @login_required
@@ -572,30 +560,14 @@ def installment_add(request):
         form = InstallmentForm(request.POST)
         if form.is_valid():
             installment = form.save(commit=False)
-            installment.paid_amount = 0           
-            if installment.installment_type == 'monthly' and installment.number_of_months > 1:
-                installment.monthly_amount = installment.amount / installment.number_of_months
-                installment.save()
-                installment.generate_monthly_installments()
-                messages.success(request, f'تم إضافة القسط الشهري بنجاح. عدد الأشهر: {installment.number_of_months}')
-            else:
-                installment.installment_type = 'single'
-                installment.number_of_months = 1
-                installment.monthly_amount = installment.amount
-                installment.save()
-                MonthlyInstallment.objects.filter(master_installment=installment).delete()
-                MonthlyInstallment.objects.create(
-                    master_installment=installment,
-                    student=installment.student,
-                    month_number=1,
-                    amount=installment.amount,
-                    due_date=installment.due_date,
-                    status='pending'
-                )               
-                messages.success(request, 'تم إضافة القسط بنجاح')
+            installment.paid_amount = 0
+            installment.status = 'pending'
+            installment.save()
+            
             student = installment.student
             student.update_total_fees()
             
+            messages.success(request, 'تم إضافة القسط بنجاح')
             return redirect('finance')
         else:
             messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
@@ -606,133 +578,43 @@ def installment_add(request):
 
 
 @login_required
-def monthly_payment_add(request, pk):
-    monthly_installment = get_object_or_404(MonthlyInstallment, pk=pk)    
+def installment_payment_add(request, pk):
+    installment = get_object_or_404(StudentInstallment, pk=pk)
+    
     if request.method == 'POST':
-        form = MonthlyPaymentForm(request.POST)
+        form = PaymentForm(request.POST)
         if form.is_valid():
             amount = form.cleaned_data['amount']
             payment_date = form.cleaned_data['payment_date']
             payment_method = form.cleaned_data['payment_method']
             notes = form.cleaned_data.get('notes', '')
-            if amount > monthly_installment.remaining_amount:
-                messages.error(
-                    request, 
-                    f'المبلغ المدخل ({amount}) يتجاوز المبلغ المتبقي للقسط الشهري رقم {monthly_installment.month_number} ({monthly_installment.remaining_amount}) د.ل'
-                )
+            
+            if amount > installment.remaining_amount:
+                messages.error(request, f'المبلغ المدخل ({amount}) يتجاوز المبلغ المتبقي للقسط ({installment.remaining_amount}) د.ل')
                 return redirect('finance')
             
-            master_installment = monthly_installment.master_installment
-            total_remaining = master_installment.remaining_amount
-            
-            if amount > total_remaining:
-                messages.error(
-                    request, 
-                    f'المبلغ المدخل ({amount}) يتجاوز إجمالي الدين المتبقي للطالب ({total_remaining}) د.ل'
-                )
-                return redirect('finance')
             payment = Payment.objects.create(
-                student=monthly_installment.student,
-                monthly_installment=monthly_installment,
-                installment=master_installment,
+                student=installment.student,
+                installment=installment,
                 amount=amount,
                 payment_date=payment_date,
                 payment_method=payment_method,
                 notes=notes,
                 created_by=request.user
             )
-            monthly_amount = monthly_installment.amount
-            monthly_remaining = monthly_installment.remaining_amount            
-            if amount > monthly_remaining:
-                extra_amount = amount - monthly_remaining
-                monthly_installment.paid_amount = monthly_installment.amount
-                monthly_installment.status = 'paid'
-                monthly_installment.paid_date = payment_date
-                monthly_installment.save()
-                next_monthly_installments = MonthlyInstallment.objects.filter(
-                    master_installment=master_installment,
-                    month_number__gt=monthly_installment.month_number,
-                    status__in=['pending', 'partial']
-                ).order_by('month_number')
-                for next_inst in next_monthly_installments:
-                    if extra_amount <= 0:
-                        break
-                    
-                    remaining_in_next = next_inst.remaining_amount
-                    
-                    if extra_amount >= remaining_in_next:
-                        next_inst.paid_amount = next_inst.amount
-                        next_inst.status = 'paid'
-                        next_inst.paid_date = payment_date
-                        next_inst.save()
-                        extra_amount -= remaining_in_next
-                    else:
-                        next_inst.paid_amount += extra_amount
-                        if next_inst.paid_amount >= next_inst.amount:
-                            next_inst.status = 'paid'
-                            next_inst.paid_date = payment_date
-                        else:
-                            next_inst.status = 'partial'
-                        next_inst.save()
-                        extra_amount = 0
-                
-                master_installment.paid_amount = sum(
-                    m.paid_amount for m in master_installment.monthly_installments.all()
-                )
-                
-                if master_installment.paid_amount >= master_installment.amount:
-                    master_installment.status = 'paid'
-                    master_installment.paid_date = payment_date
-                elif master_installment.paid_amount > 0:
-                    master_installment.status = 'partial'
-                master_installment.save()
-                
-                student = monthly_installment.student
-                student.update_total_fees()
-                
-                if extra_amount > 0:
-                    messages.warning(
-                        request, 
-                        f'تم تسجيل دفعة بقيمة {amount} دينار. تم توزيع المبلغ الزائد على الأقساط التالية، ولا يزال هناك رصيد متبقي بقيمة {extra_amount} دينار'
-                    )
-                else:
-                    messages.success(
-                        request, 
-                        f'تم تسجيل دفعة بقيمة {amount} دينار. تم تسديد القسط الشهري رقم {monthly_installment.month_number} بالكامل، وتم توزيع المبلغ الزائد على الأقساط التالية'
-                    )
-            else:
-                messages.success(
-                    request, 
-                    f'تم تسجيل دفعة بقيمة {amount} دينار للقسط الشهري رقم {monthly_installment.month_number}'
-                )
             
+            messages.success(request, f'تم تسجيل دفعة بقيمة {amount} دينار للقسط')
             return redirect('finance')
         else:
             messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
     else:
-        form = MonthlyPaymentForm(initial={'monthly_installment': monthly_installment})
+        form = PaymentForm(initial={'student': installment.student, 'installment': installment})
+    
     return render(request, 'payment_form.html', {
         'form': form,
-        'monthly_installment': monthly_installment,
-        'remaining_amount': monthly_installment.remaining_amount,
-        'total_remaining': monthly_installment.master_installment.remaining_amount
+        'installment': installment,
+        'remaining_amount': installment.remaining_amount,
     })
-
-
-@login_required
-def installment_edit(request, pk):
-    installment = get_object_or_404(StudentInstallment, pk=pk)
-    if request.method == 'POST':
-        form = InstallmentForm(request.POST, instance=installment)
-        if form.is_valid():
-            form.save()
-            student = installment.student
-            student.update_total_fees()
-            messages.success(request, 'تم تحديث القسط')
-            return redirect('finance')
-    else:
-        form = InstallmentForm(instance=installment)
-    return render(request, 'installment_form.html', {'form': form})
 
 
 @login_required

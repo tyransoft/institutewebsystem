@@ -20,6 +20,10 @@ urlpatterns = [
     path('specializations/<int:pk>/edit/', specialization_edit, name='specialization_edit'),
     path('specializations/<int:pk>/delete/', specialization_delete, name='specialization_delete'),
 
+    path('semesters/', semester_list, name='semester_list'),
+    path('semester/add/', semester_add, name='semester_add'),
+    path('semester/<int:pk>/edit/', semester_edit, name='semester_edit'),
+    path('semester/<int:pk>/delete/', semester_delete, name='semester_delete'),
 
     path('students/', student_list, name='student_list'),
     path('students/add/', student_add, name='student_add'),
@@ -31,9 +35,8 @@ urlpatterns = [
     path('send-whatsapp-pdf/<int:pk>/', send_whatsapp_pdf, name='send_whatsapp_pdf'),
 
     path('finance/', finance, name='finance'),
-    path('finance/payment/add/<int:pk>', monthly_payment_add, name='monthly_payment_add'),
+    path('finance/payment/add/<int:pk>', installment_payment_add, name='payment_add'),
     path('finance/installment/add/', installment_add, name='installment_add'),
-    path('finance/installment/<int:pk>/edit/', installment_edit, name='installment_edit'),
     path('print/receipt/<int:payment_id>/', print_receipt, name='print_receipt'),
     path('api/search-students/', search_students, name='search_students'),
     path('api/search-installments/', search_installments, name='search_installments'),

@@ -81,6 +81,36 @@ class Specialization(models.Model):
         return f"{self.name} - {self.department.name}"
 
 
+class AcademicSemester(models.Model):
+    """نموذج الفصل الدراسي"""
+    SEMESTER_TYPES = [
+        ('first', 'خريف'),
+        ('second', 'ربيع'),
+        ('summer', 'صيف'),
+    ]
+    
+    name = models.CharField(max_length=100, verbose_name='اسم الفصل')
+    semester_type = models.CharField(max_length=20, choices=SEMESTER_TYPES, verbose_name='نوع الفصل')
+    academic_year = models.CharField(max_length=20, verbose_name='العام الدراسي')
+    start_date = models.DateField(verbose_name='تاريخ البدء')
+    end_date = models.DateField(verbose_name='تاريخ الانتهاء')
+    is_active = models.BooleanField(default=True, verbose_name='نشط')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'فصل دراسي'
+        verbose_name_plural = 'الفصول الدراسية'
+        ordering = ['-start_date']
+    
+    def __str__(self):
+        return f"{self.get_semester_type_display()} - {self.academic_year}"
+    
+    def get_semester_type_display_ar(self):
+        return dict(self.SEMESTER_TYPES).get(self.semester_type, self.semester_type)    
+
+
+
+
 class Student(models.Model):
     STATUS_CHOICES = [
         ('active', 'نشط'),
@@ -94,12 +124,12 @@ class Student(models.Model):
     address = models.TextField(blank=True, null=True, verbose_name='العنوان')
     photo = models.ImageField(upload_to='students/', blank=True, null=True, verbose_name='الصورة')
     registration_number = models.CharField(max_length=50, unique=True, verbose_name='رقم التسجيل')
-    nation_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الوطني')
+    nation_number = models.CharField(max_length=20,default='--' , blank=True, null=True, verbose_name='رقم الوطني')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name='القسم')
     specialization = models.ForeignKey(Specialization, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='التخصص')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='الحالة')
     total_fees = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='إجمالي الرسوم')
-    
+    current_semester = models.ForeignKey(AcademicSemester, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name='الفصل الحالي')  
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         verbose_name = 'طالب'
@@ -177,7 +207,9 @@ class Student(models.Model):
     def get_status_display_ar(self):
         return dict(self.STATUS_CHOICES).get(self.status, self.status)
     
-    
+
+
+
 class StudentInstallment(models.Model):
     STATUS_CHOICES = [
         ('pending', 'معلق'),
@@ -192,6 +224,7 @@ class StudentInstallment(models.Model):
     ]
     
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='installments', verbose_name='الطالب')
+    semester = models.ForeignKey(AcademicSemester, on_delete=models.CASCADE, related_name='installments', verbose_name='الفصل الدراسي', null=True, blank=True)   
     amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='إجمالي المبلغ')
     paid_amount = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='المدفوع الكلي')
     due_date = models.DateField(verbose_name='تاريخ الاستحقاق')
@@ -200,9 +233,6 @@ class StudentInstallment(models.Model):
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_at = models.DateTimeField(auto_now_add=True)
     
-    installment_type = models.CharField(max_length=20, choices=INSTALLMENT_TYPE_CHOICES, default='single', verbose_name='نوع التقسيط')
-    number_of_months = models.IntegerField(default=1, verbose_name='عدد الأشهر', help_text='للأقساط الشهرية')
-    monthly_amount = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='المبلغ الشهري')
     
     class Meta:
         verbose_name = 'قسط طالب'
@@ -225,94 +255,9 @@ class StudentInstallment(models.Model):
     def get_status_display_ar(self):
         return dict(self.STATUS_CHOICES).get(self.status, self.status)
     
-    def get_installment_type_display_ar(self):
-        return dict(self.INSTALLMENT_TYPE_CHOICES).get(self.installment_type, self.installment_type)
-    
-    def generate_monthly_installments(self):
-      MonthlyInstallment.objects.filter(master_installment=self).delete()
-      if self.installment_type == 'monthly' and self.number_of_months > 1:
-        monthly_count = self.number_of_months
-        monthly_amount = self.amount / self.number_of_months
-        self.monthly_amount = monthly_amount
-      else:
-        monthly_count = 1
-        monthly_amount = self.amount
-        self.monthly_amount = monthly_amount
-        self.installment_type = 'single'
-        self.number_of_months = 1
-    
-      self.save()
-    
-      for i in range(monthly_count):
-        due_date = self.due_date + relativedelta(months=i)
-        MonthlyInstallment.objects.create(
-            master_installment=self,
-            student=self.student,
-            month_number=i + 1,
-            amount=monthly_amount,
-            due_date=due_date,
-            status='pending'
-        )    
 
 
-class MonthlyInstallment(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'غير مدفوع'),
-        ('paid', 'مدفوع'),
-        ('overdue', 'متأخر'),
-        ('partial', 'مدفوع جزئياً'),
-    ]
-    
-    master_installment = models.ForeignKey(StudentInstallment, on_delete=models.CASCADE, related_name='monthly_installments', verbose_name='القسط الرئيسي')
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='monthly_installments', verbose_name='الطالب')
-    month_number = models.IntegerField(verbose_name='رقم الشهر')
-    amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='المبلغ الشهري')
-    paid_amount = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='المدفوع')
-    due_date = models.DateField(verbose_name='تاريخ الاستحقاق')
-    paid_date = models.DateField(blank=True, null=True, verbose_name='تاريخ الدفع')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='الحالة')
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'قسط شهري'
-        verbose_name_plural = 'الأقساط الشهرية'
-        ordering = ['due_date']
-        unique_together = ['master_installment', 'month_number']
-    
-    def __str__(self):
-        return f"{self.student.full_name} - الشهر {self.month_number} - {self.amount}"
-    
-    @property
-    def remaining_amount(self):
-        return self.amount - self.paid_amount
-    
-    def get_status_display_ar(self):
-        return dict(self.STATUS_CHOICES).get(self.status, self.status)
-    
-    def mark_as_paid(self, amount=None, payment_date=None):
-        """تسجيل دفع للقسط الشهري"""
-        if amount is None:
-            amount = self.amount
-        
-        self.paid_amount += amount
-        if self.paid_amount >= self.amount:
-            self.status = 'paid'
-            self.paid_date = payment_date or date.today()
-        elif self.paid_amount > 0:
-            self.status = 'partial'
-        
-        self.save()
-        
-        master = self.master_installment
-        master.paid_amount = sum(m.paid_amount for m in master.monthly_installments.all())
-        
-        if master.paid_amount >= master.amount:
-            master.status = 'paid'
-            master.paid_date = date.today()
-        elif master.paid_amount > 0:
-            master.status = 'partial'
-        
-        master.save()
+
 
 
 class Payment(models.Model):
@@ -324,7 +269,6 @@ class Payment(models.Model):
     
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='payments', verbose_name='الطالب')
     installment = models.ForeignKey(StudentInstallment, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القسط')
-    monthly_installment = models.ForeignKey(MonthlyInstallment, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القسط الشهري')
     
     amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='المبلغ')
     payment_date = models.DateField(verbose_name='تاريخ الدفع')
@@ -351,13 +295,37 @@ class Payment(models.Model):
             else:
                 new_num = 1
             
+            from datetime import date
             date_str = date.today().strftime('%Y%m%d')
             self.receipt_number = f"{date_str}-{new_num:04d}"
         
         super().save(*args, **kwargs)
         
-        if self.monthly_installment:
-            self.monthly_installment.mark_as_paid(self.amount, self.payment_date)
+        if self.installment:
+            installment = self.installment
+            total_paid = installment.payments.aggregate(total=models.Sum('amount'))['total'] or 0
+            installment.paid_amount = total_paid
+            
+            if total_paid >= installment.amount:
+                installment.status = 'paid'
+                installment.paid_date = self.payment_date
+            elif total_paid > 0:
+                installment.status = 'partial'
+            else:
+                installment.status = 'pending'
+            
+            installment.save()
+            
+            student = installment.student
+            student.update_total_fees()
+   
+    def __str__(self):
+        return f"{self.student.full_name} - {self.amount} - {self.receipt_number}"
+
+    def get_method_display_ar(self):
+        return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)
+        
+
    
     def __str__(self):
         return f"{self.student.full_name} - {self.amount} - {self.receipt_number}"

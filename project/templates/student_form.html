@@ -1,65 +1,192 @@
 {% extends 'base.html' %}
 {% block title %}{% if object %}تعديل بيانات الطالب{% else %}إضافة طالب جديد{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
+    .select2-container--bootstrap-5 .select2-selection {
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        min-height: 38px;
+    }
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__placeholder {
+        color: #6c757d;
+    }
+    .select2-search__field {
+        direction: rtl;
+        text-align: right;
+    }
+    .select2-results__option {
+        text-align: right;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header d-flex align-items-center gap-3">
-  <a href="{% url 'student_list' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right"></i></a>
+  <a href="{% url 'student_list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i>
+  </a>
   <div>
     <h2>{% if object %}تعديل بيانات: {{ object.full_name }}{% else %}إضافة طالب جديد{% endif %}</h2>
+    <p class="text-muted small">جميع الحقول بعلامة <span class="text-danger">*</span> إلزامية</p>
   </div>
 </div>
-<div class="table-card p-4" style="max-width:800px;">
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ form.full_name.label }}</label>
-        {{ form.full_name }}
-        {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ form.father_name.label }}</label>
-        {{ form.father_name }}
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ form.nation_number.label }}</label>
-        {{ form.nation_number }}
-        {% if form.nation_number.errors %}<div class="text-danger small mt-1">{{ form.nation_number.errors.0 }}</div>{% endif %}
-      </div>
-     
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ form.phone.label }}</label>
-        {{ form.phone }}
-      </div>
 
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ form.department.label }}</label>
-        {{ form.department }}
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ form.specialization.label }}</label>
-        {{ form.specialization }}
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ form.status.label }}</label>
-        {{ form.status }}
-      </div>
-
-      <div class="col-12">
-        <label class="form-label fw-semibold">{{ form.address.label }}</label>
-        {{ form.address }}
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-semibold ">{{ form.photo.label }}</label>
-        {{ form.photo }}
-      </div>
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="table-card p-4">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              {{ form.full_name.label }} <span class="text-danger">*</span>
+            </label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              {{ form.father_name.label }} <span class="text-danger">*</span>
+            </label>
+            {{ form.father_name }}
+            {% if form.father_name.errors %}
+              <div class="text-danger small mt-1">{{ form.father_name.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.nation_number.label }}</label>
+            {{ form.nation_number }}
+          
+            {% if form.nation_number.errors %}
+              <div class="text-danger small mt-1">{{ form.nation_number.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.phone.label }}</label>
+            {{ form.phone }}
+            <div class="text-muted small mt-1">
+              <i class="bi bi-phone"></i> مثال: 0912345678
+            </div>
+            {% if form.phone.errors %}
+              <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.department.label }}</label>
+            {{ form.department }}
+            <div class="text-muted small mt-1">
+              <i class="bi bi-building"></i> اختر القسم التابع له الطالب
+            </div>
+            {% if form.department.errors %}
+              <div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.specialization.label }}</label>
+            {{ form.specialization }}
+            <div class="text-muted small mt-1">
+              <i class="bi bi-bookmark"></i> اختر التخصص (مرتبط بالقسم)
+            </div>
+            {% if form.specialization.errors %}
+              <div class="text-danger small mt-1">{{ form.specialization.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.current_semester.label }}</label>
+            <select name="current_semester" id="id_current_semester" class="form-select">
+              <option value="">---------</option>
+              {% for semester in semesters %}
+              <option value="{{ semester.id }}" 
+                {% if form.instance.current_semester.id == semester.id %}selected{% endif %}>
+                {{ semester.name }} - {{ semester.academic_year }}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="text-muted small mt-1">
+              <i class="bi bi-calendar-week"></i> الفصل الدراسي الذي يدرسه الطالب حالياً (اختياري)
+            </div>
+            {% if form.current_semester.errors %}
+              <div class="text-danger small mt-1">{{ form.current_semester.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.status.label }}</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+              <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.photo.label }}</label>
+            {{ form.photo }}
+            <div class="text-muted small mt-1">
+              <i class="bi bi-image"></i> الصورة الشخصية 
+            </div>
+            {% if form.photo.errors %}
+              <div class="text-danger small mt-1">{{ form.photo.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-12">
+            <label class="form-label fw-semibold">{{ form.address.label }}</label>
+            {{ form.address }}
+            <div class="text-muted small mt-1">
+              <i class="bi bi-geo-alt"></i> العنوان الكامل (اختياري)
+            </div>
+            {% if form.address.errors %}
+              <div class="text-danger small mt-1">{{ form.address.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <hr class="my-3">
+        
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-lg me-1"></i> حفظ
+          </button>
+          <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-1"></i> إلغاء
+          </a>
+        </div>
+      </form>
     </div>
-    <hr class="my-3">
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary px-4">
-        <i class="bi bi-check-lg me-1"></i> حفظ
-      </button>
-      <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">إلغاء</a>
-    </div>
-  </form>
+    
+   
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_current_semester').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'اختر الفصل الدراسي الحالي',
+        allowClear: true,
+        dir: 'rtl'
+    });
+    
+    const departmentSelect = $('#id_department');
+    const specializationSelect = $('#id_specialization');
+    
+   
+});
+</script>
 {% endblock %}

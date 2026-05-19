@@ -147,29 +147,49 @@ class StudentForm(forms.ModelForm):
         model = Student
         fields = [
             'full_name', 'father_name', 'phone', 'address', 'photo',
-            'nation_number', 'department', 'specialization', 'status'
+            'nation_number', 'department', 'specialization', 'status', 'current_semester'
         ]
         widgets = {
             'full_name': forms.TextInput(attrs=WIDGET_ATTRS),
             'father_name': forms.TextInput(attrs=WIDGET_ATTRS),
             'phone': forms.TextInput(attrs=WIDGET_ATTRS),
             'address': forms.Textarea(attrs={**WIDGET_ATTRS, 'rows': 2}),
-            'nation_number':forms.TextInput(attrs=WIDGET_ATTRS),
+            'nation_number': forms.TextInput(attrs={**WIDGET_ATTRS, 'required': False}),
             'department': forms.Select(attrs=SELECT_ATTRS),
             'specialization': forms.Select(attrs=SELECT_ATTRS),
             'status': forms.Select(attrs=SELECT_ATTRS),
+            'photo': forms.FileInput(attrs={'class': 'form-control'}),
+            'current_semester': forms.Select(attrs=SELECT_ATTRS),
         }
         labels = {
             'full_name': 'الاسم الكامل',
             'father_name': 'اسم الأب',
             'phone': 'الهاتف',
             'address': 'العنوان',
-            'photo': 'الصورة',
-            'nation_number':'الرقم الوطني',
+            'photo': 'الصورة الشخصية',
+            'nation_number': 'الرقم الوطني (اختياري)',
             'department': 'القسم',
             'specialization': 'التخصص',
             'status': 'الحالة',
+            'current_semester': 'الفصل الدراسي الحالي',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['nation_number'].required = False
+        self.fields['current_semester'].required = False
+        self.order_fields([
+            'full_name', 'father_name', 'phone', 'address', 'photo',
+            'nation_number', 'department', 'specialization', 'status', 'current_semester'
+        ])
+    
+    def clean_nation_number(self):
+        """التحقق من uniqueness مع السماح بقيم فارغة"""
+        nation_number = self.cleaned_data.get('nation_number')
+        if nation_number:
+            if Student.objects.filter(nation_number=nation_number).exclude(pk=self.instance.pk).exists():
+                raise forms.ValidationError('هذا الرقم الوطني مسجل مسبقاً')
+        return nation_number
 
 
 class DepartmentForm(forms.ModelForm):
@@ -196,42 +216,6 @@ class SpecializationForm(forms.ModelForm):
 
 
 
-
-class InstallmentForm(forms.ModelForm):
-    class Meta:
-        model = StudentInstallment
-        fields = ['student', 'amount', 'installment_type', 'number_of_months', 'due_date', 'notes']
-        widgets = {
-            'student': forms.Select(attrs=SELECT_ATTRS),
-            'amount': forms.NumberInput(attrs=WIDGET_ATTRS),
-            'installment_type': forms.Select(attrs=SELECT_ATTRS),
-            'number_of_months': forms.NumberInput(attrs=WIDGET_ATTRS),
-            'due_date': forms.DateInput(attrs=DATE_ATTRS),
-            'notes': forms.Textarea(attrs={**WIDGET_ATTRS, 'rows': 2}),
-        }
-        labels = {
-            'student': 'الطالب',
-            'amount': 'إجمالي المبلغ',
-            'installment_type': 'نوع التقسيط',
-            'number_of_months': 'عدد الأشهر (للأقساط الشهرية)',
-            'due_date': 'تاريخ الاستحقاق الأول',
-            'notes': 'ملاحظات',
-        }
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        installment_type = cleaned_data.get('installment_type')
-        number_of_months = cleaned_data.get('number_of_months')
-        amount = cleaned_data.get('amount')
-        
-        if installment_type == 'monthly' and number_of_months and number_of_months < 2:
-            self.add_error('number_of_months', 'عدد الأشهر يجب أن يكون 2 على الأقل للتقسيط الشهري')
-        
-        if installment_type == 'monthly' and number_of_months and amount:
-            if amount % number_of_months != 0:
-                self.add_error('amount', f'المبلغ {amount} غير قابل للقسمة على {number_of_months} أشهر. يرجى تعديل المبلغ أو عدد الأشهر')
-        
-        return cleaned_data
 
 
 
@@ -265,43 +249,74 @@ class ExpenseCategoryForm(forms.ModelForm):
             'description': forms.Textarea(attrs={**WIDGET_ATTRS, 'rows': 3}),
         }
         labels = {'name': 'اسم الفئة', 'description': 'الوصف'}            
+                                
+class InstallmentForm(forms.ModelForm):
+    class Meta:
+        model = StudentInstallment
+        fields = ['student', 'semester', 'amount', 'due_date', 'notes']
+        widgets = {
+            'student': forms.Select(attrs=SELECT_ATTRS),
+            'semester': forms.Select(attrs=SELECT_ATTRS),
+            'amount': forms.NumberInput(attrs=WIDGET_ATTRS),
+            'due_date': forms.DateInput(attrs=DATE_ATTRS),
+            'notes': forms.Textarea(attrs={**WIDGET_ATTRS, 'rows': 2}),
+        }
+        labels = {
+            'student': 'الطالب',
+            'semester': 'الفصل الدراسي',
+            'amount': 'المبلغ',
+            'due_date': 'تاريخ الاستحقاق',
+            'notes': 'ملاحظات',
+        }
 
-class MonthlyPaymentForm(forms.Form):
-    """نموذج تسديد قسط شهري محدد"""
-    amount = forms.DecimalField(
-        max_digits=15, 
-        decimal_places=0, 
-        label='المبلغ المدفوع',
-        widget=forms.NumberInput(attrs={
-            **WIDGET_ATTRS, 
-            'min': 1,
-            'step': 1,
-            'placeholder': 'أدخل المبلغ المراد دفعه'
-        })
-    )
-    payment_date = forms.DateField(
-        label='تاريخ الدفع',
-        widget=forms.DateInput(attrs=DATE_ATTRS)
-    )
-    payment_method = forms.ChoiceField(
-        choices=Payment.METHOD_CHOICES,
-        label='طريقة الدفع',
-        widget=forms.Select(attrs=SELECT_ATTRS)
-    )
-    notes = forms.CharField(
-        required=False,
-        label='ملاحظات',
-        widget=forms.Textarea(attrs={**WIDGET_ATTRS, 'rows': 2})
-    )
+
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ['student', 'installment', 'amount', 'payment_date', 'payment_method', 'notes']
+        widgets = {
+            'student': forms.Select(attrs=SELECT_ATTRS),
+            'installment': forms.Select(attrs=SELECT_ATTRS),
+            'amount': forms.NumberInput(attrs=WIDGET_ATTRS),
+            'payment_date': forms.DateInput(attrs=DATE_ATTRS),
+            'payment_method': forms.Select(attrs=SELECT_ATTRS),
+            'notes': forms.Textarea(attrs={**WIDGET_ATTRS, 'rows': 2}),
+        }
+        labels = {
+            'student': 'الطالب',
+            'installment': 'القسط',
+            'amount': 'المبلغ',
+            'payment_date': 'تاريخ الدفع',
+            'payment_method': 'طريقة الدفع',
+            'notes': 'ملاحظات',
+        }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from datetime import date
         if not self.data.get('payment_date'):
             self.initial['payment_date'] = date.today()
-    
-    def clean_amount(self):
-        amount = self.cleaned_data.get('amount')
-        if amount <= 0:
-            raise forms.ValidationError('يجب أن يكون المبلغ أكبر من صفر')
-        return amount                                 
+        
+        self.fields['installment'].queryset = StudentInstallment.objects.exclude(status='paid')
+
+
+class SemesterForm(forms.ModelForm):
+    class Meta:
+        model = AcademicSemester
+        fields = ['name', 'semester_type', 'academic_year', 'start_date', 'end_date', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs=WIDGET_ATTRS),
+            'semester_type': forms.Select(attrs=SELECT_ATTRS),
+            'academic_year': forms.TextInput(attrs=WIDGET_ATTRS),
+            'start_date': forms.DateInput(attrs=DATE_ATTRS),
+            'end_date': forms.DateInput(attrs=DATE_ATTRS),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'name': 'اسم الفصل',
+            'semester_type': 'نوع الفصل',
+            'academic_year': 'العام الدراسي',
+            'start_date': 'تاريخ البدء',
+            'end_date': 'تاريخ الانتهاء',
+            'is_active': 'فصل نشط',
+        }                               

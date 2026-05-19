@@ -20,92 +20,114 @@
     .select2-results__option {
         text-align: right;
     }
-    
-    #div_number_of_months {
-        display: none;
-    }
-    #div_number_of_months.show {
-        display: block;
-    }
-    
-    .monthly-note {
-        background: #f8f9fa;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 14px;
-    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-header d-flex align-items-center gap-3">
-  <a href="{% url 'finance' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right"></i></a>
-  <div><h2>{% if object %}تعديل القسط{% else %}إضافة قسط جديد{% endif %}</h2></div>
+  <a href="{% url 'finance' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i>
+  </a>
+  <div>
+    <h2>{% if object %}تعديل القسط{% else %}إضافة قسط جديد{% endif %}</h2>
+    <p class="text-muted small">إضافة قسط دراسي للطالب</p>
+  </div>
 </div>
-<div class="table-card p-4" style="max-width:800px;">
-  <form method="post" id="installmentForm">
-    {% csrf_token %}
-    
-    <div class="mb-3">
-      <label class="form-label fw-semibold">{{ form.student.label }}</label>
-      <select name="student" id="id_student" class="form-select" required>
-        <option value="">---------</option>
-        {% if form.instance.student %}
-        <option value="{{ form.instance.student.id }}" selected>{{ form.instance.student.full_name }} ({{ form.instance.student.registration_number }})</option>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="table-card p-4">
+      <form method="post" id="installmentForm">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.student.label }}</label>
+          <select name="student" id="id_student" class="form-select" required>
+            <option value="">---------</option>
+            {% if form.instance.student %}
+            <option value="{{ form.instance.student.id }}" selected>
+              {{ form.instance.student.full_name }} ({{ form.instance.student.registration_number }})
+            </option>
+            {% endif %}
+          </select>
+          {% if form.student.errors %}
+            <div class="text-danger small mt-1">{{ form.student.errors.0 }}</div>
+          {% endif %}
+          <div class="text-muted small mt-1">
+            <i class="bi bi-info-circle"></i> ابحث باسم الطالب أو رقم القيد
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.semester.label }}</label>
+          {{ form.semester }}
+          {% if form.semester.errors %}
+            <div class="text-danger small mt-1">{{ form.semester.errors.0 }}</div>
+          {% endif %}
+          <div class="text-muted small mt-1">
+            <i class="bi bi-calendar-week"></i> اختر الفصل الدراسي المرتبط بهذا القسط
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.amount.label }}</label>
+          {{ form.amount }}
+          {% if form.amount.errors %}
+            <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+          {% endif %}
+          <div class="text-muted small mt-1" id="amountHelp">
+            <i class="bi bi-cash-stack"></i> أدخل المبلغ الإجمالي للقسط
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.due_date.label }}</label>
+          {{ form.due_date }}
+          {% if form.due_date.errors %}
+            <div class="text-danger small mt-1">{{ form.due_date.errors.0 }}</div>
+          {% endif %}
+          <div class="text-muted small mt-1">
+            <i class="bi bi-calendar-exclamation"></i> تاريخ استحقاق دفع القسط
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.notes.label }}</label>
+          {{ form.notes }}
+          {% if form.notes.errors %}
+            <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
+          {% endif %}
+        </div>
+        
+        {% if object %}
+        <div class="alert alert-info mt-3">
+          <div class="d-flex justify-content-between">
+            <span>المبلغ المدفوع:</span>
+            <span class="fw-bold text-success">{{ object.paid_amount|floatformat:0 }} د.ل</span>
+          </div>
+          <div class="d-flex justify-content-between mt-1">
+            <span>المبلغ المتبقي:</span>
+            <span class="fw-bold text-danger">{{ object.remaining_amount|floatformat:0 }} د.ل</span>
+          </div>
+         
+        </div>
         {% endif %}
-      </select>
-      {% if form.student.errors %}<div class="text-danger small mt-1">{{ form.student.errors.0 }}</div>{% endif %}
-      <div class="text-muted small mt-1">ابحث باسم الطالب أو رقم القيد</div>
+        
+        <hr class="my-3">
+        
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-lg me-1"></i> حفظ
+          </button>
+          <a href="{% url 'finance' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-1"></i> إلغاء
+          </a>
+        </div>
+      </form>
     </div>
     
-    <div class="mb-3">
-      <label class="form-label fw-semibold">{{ form.amount.label }}</label>
-      {{ form.amount }}
-      {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
-      <div class="text-muted small mt-1" id="amountHelp"></div>
-    </div>
-    
-    <div class="mb-3">
-      <label class="form-label fw-semibold">{{ form.installment_type.label }}</label>
-      {{ form.installment_type }}
-      {% if form.installment_type.errors %}<div class="text-danger small mt-1">{{ form.installment_type.errors.0 }}</div>{% endif %}
-      <div class="text-muted small mt-1">
-        <span id="typeHelp">قسط واحد: يتم دفع المبلغ كاملاً مرة واحدة</span>
-      </div>
-    </div>
-    
-    <div class="mb-3" id="div_number_of_months">
-      <label class="form-label fw-semibold">{{ form.number_of_months.label }}</label>
-      {{ form.number_of_months }}
-      {% if form.number_of_months.errors %}<div class="text-danger small mt-1">{{ form.number_of_months.errors.0 }}</div>{% endif %}
-      <div class="text-muted small mt-1">أدخل عدد الأشهر (شهرين على الأقل)</div>
-    </div>
-    
-    <div class="mb-3">
-      <label class="form-label fw-semibold">{{ form.due_date.label }}</label>
-      {{ form.due_date }}
-      {% if form.due_date.errors %}<div class="text-danger small mt-1">{{ form.due_date.errors.0 }}</div>{% endif %}
-      <div class="text-muted small mt-1">تاريخ استحقاق أول قسط</div>
-    </div>
-    
-    <div class="mb-3">
-      <label class="form-label fw-semibold">{{ form.notes.label }}</label>
-      {{ form.notes }}
-      {% if form.notes.errors %}<div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>{% endif %}
-    </div>
-    
-    <div id="installmentDetails" class="monthly-note" style="display: none;">
-      <i class="bi bi-info-circle"></i>
-      <span id="detailsText"></span>
-    </div>
-    
-    <hr class="my-3">
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-1"></i> حفظ</button>
-      <a href="{% url 'finance' %}" class="btn btn-outline-secondary">إلغاء</a>
-    </div>
-  </form>
+   
+  </div>
 </div>
 {% endblock %}
 
@@ -149,80 +171,42 @@ $(document).ready(function() {
         minimumInputLength: 2
     });
     
-    function toggleMonthsField() {
-        var type = $('#id_installment_type').val();
-        if (type === 'monthly') {
-            $('#div_number_of_months').addClass('show').show();
-            $('#typeHelp').text('تقسيط شهري: سيتم تقسيم المبلغ على عدد الأشهر');
+    $('#id_semester').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'اختر الفصل الدراسي',
+        allowClear: true,
+        dir: 'rtl'
+    });
+    
+    $('#id_amount').on('keyup change', function() {
+        var amount = parseFloat($(this).val()) || 0;
+        if (amount > 0) {
+            $('#amountHelp').html(`
+                <i class="bi bi-cash-stack"></i> 
+                المبلغ: ${amount.toFixed(0)} دينار
+            `);
         } else {
-            $('#div_number_of_months').removeClass('show').hide();
-            $('#typeHelp').text('قسط واحد: يتم دفع المبلغ كاملاً مرة واحدة');
-            $('#installmentDetails').hide();
+            $('#amountHelp').html(`
+                <i class="bi bi-cash-stack"></i> 
+                أدخل المبلغ الإجمالي للقسط
+            `);
         }
-        calculateInstallment();
-    }
+    });
     
-    function calculateInstallment() {
-        var type = $('#id_installment_type').val();
-        var amount = parseFloat($('#id_amount').val()) || 0;
-        var months = parseInt($('#id_number_of_months').val()) || 0;
-        
-        if (type === 'monthly' && months >= 2 && amount > 0) {
-            var monthlyAmount = amount / months;
-            if (amount % months !== 0) {
-                $('#installmentDetails').removeClass('bg-info').addClass('bg-warning').show();
-                $('#detailsText').html(`
-                     تنبيه: المبلغ ${amount} دينار غير قابل للقسمة على ${months} أشهر.
-                    <br> قيمة كل قسط شهري ستكون تقريباً: ${monthlyAmount.toFixed(2)} دينار
-                    <br> نصيحة: يفضل تعديل المبلغ ليكون قابلاً للقسمة على عدد الأشهر
-                `);
+    $('#id_due_date').on('change', function() {
+        var dueDate = $(this).val();
+        if (dueDate) {
+            var today = new Date().toISOString().split('T')[0];
+            if (dueDate < today) {
+                $(this).addClass('is-invalid');
+                if (!$('#dateWarning').length) {
+                    $(this).after('<div id="dateWarning" class="text-warning small mt-1">⚠️ تاريخ الاستحقاق في الماضي</div>');
+                }
             } else {
-                $('#installmentDetails').removeClass('bg-warning').addClass('bg-success').show();
-                $('#detailsText').html(`
-                     تفاصيل التقسيط:
-                    <br> إجمالي المبلغ: ${amount} دينار
-                    <br> عدد الأشهر: ${months} شهر
-                    <br> القسط الشهري: ${monthlyAmount} دينار
-                    <br> تاريخ أول قسط: ${$('#id_due_date').val() || 'لم يتم تحديده'}
-                `);
-            }
-            $('#amountHelp').html(`المبلغ ${amount} دينار سيتم تقسيطه على ${months} أشهر بقيمة ${monthlyAmount} دينار شهرياً`);
-        } else {
-            $('#installmentDetails').hide();
-            if (type === 'single' && amount > 0) {
-                $('#amountHelp').html(`المبلغ ${amount} دينار سيتم دفعه كاملاً في تاريخ الاستحقاق`);
-            } else {
-                $('#amountHelp').html('');
+                $(this).removeClass('is-invalid');
+                $('#dateWarning').remove();
             }
         }
-    }
-    
-    $('#id_installment_type').on('change', toggleMonthsField);
-    $('#id_amount').on('keyup change', calculateInstallment);
-    $('#id_number_of_months').on('keyup change', calculateInstallment);
-    $('#id_due_date').on('change', calculateInstallment);
-    
-    toggleMonthsField();
-    
-    $('#installmentForm').on('submit', function(e) {
-        var type = $('#id_installment_type').val();
-        var months = parseInt($('#id_number_of_months').val()) || 0;
-        var amount = parseFloat($('#id_amount').val()) || 0;
-        
-        if (type === 'monthly' && months < 2) {
-            e.preventDefault();
-            alert('عدد الأشهر يجب أن يكون 2 على الأقل للتقسيط الشهري');
-            return false;
-        }
-        
-        if (type === 'monthly' && amount > 0 && months > 0 && amount % months !== 0) {
-            var confirmSubmit = confirm('تحذير: المبلغ غير قابل للقسمة على عدد الأشهر بدقة.\nهل تريد المتابعة؟');
-            if (!confirmSubmit) {
-                e.preventDefault();
-                return false;
-            }
-        }
-        return true;
     });
 });
 </script>

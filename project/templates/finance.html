@@ -146,7 +146,7 @@
               
               
               {% if inst.remaining_amount > 0 %}
-              <a href="{% url 'installment_payment_add' inst.pk %}" class="btn btn-sm btn-success" title="تسديد">
+              <a href="{% url 'payment_add' inst.pk %}" class="btn btn-sm btn-success" title="تسديد">
                 <i class="bi bi-cash-stack"></i> دفع
               </a>
               <button type="button" class="btn btn-sm btn-success" style="background-color: #25D366; border-color: #25D366;" 

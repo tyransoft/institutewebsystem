@@ -268,7 +268,7 @@ class Payment(models.Model):
     ]
     
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='payments', verbose_name='الطالب')
-    installment = models.ForeignKey(StudentInstallment, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القسط')
+    installment = models.ForeignKey(StudentInstallment, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='القسط' , related_name='payments')
     
     amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='المبلغ')
     payment_date = models.DateField(verbose_name='تاريخ الدفع')

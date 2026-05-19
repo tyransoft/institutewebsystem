@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}تعديل الفصل الدراسي{% else %}إضافة فصل دراسي{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex align-items-center gap-3">
+  <a href="{% url 'semester_list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i>
+  </a>
+  <div>
+    <h2>{% if object %}تعديل الفصل الدراسي{% else %}إضافة فصل دراسي جديد{% endif %}</h2>
+    <p class="text-muted small">إدارة الفصول الدراسية في المعهد</p>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="table-card p-4">
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.name.label }} <span class="text-danger">*</span></label>
+          {{ form.name }}
+          {% if form.name.errors %}
+            <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+          {% endif %}
+          <div class="text-muted small mt-1">
+            <i class="bi bi-info-circle"></i> مثال: الفصل الدراسي الأول 2024-2025
+          </div>
+        </div>
+        
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.semester_type.label }} <span class="text-danger">*</span></label>
+            {{ form.semester_type }}
+            {% if form.semester_type.errors %}
+              <div class="text-danger small mt-1">{{ form.semester_type.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.academic_year.label }} <span class="text-danger">*</span></label>
+            {{ form.academic_year }}
+            {% if form.academic_year.errors %}
+              <div class="text-danger small mt-1">{{ form.academic_year.errors.0 }}</div>
+            {% endif %}
+            <div class="text-muted small mt-1">
+              <i class="bi bi-calendar"></i> مثال: 2024-2025
+            </div>
+          </div>
+        </div>
+        
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.start_date.label }} <span class="text-danger">*</span></label>
+            {{ form.start_date }}
+            {% if form.start_date.errors %}
+              <div class="text-danger small mt-1">{{ form.start_date.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">{{ form.end_date.label }} <span class="text-danger">*</span></label>
+            {{ form.end_date }}
+            {% if form.end_date.errors %}
+              <div class="text-danger small mt-1">{{ form.end_date.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="mb-3 mt-3">
+          <div class="form-check form-switch">
+            {{ form.is_active }}
+            <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
+              {{ form.is_active.label }}
+            </label>
+          </div>
+          <div class="text-muted small mt-1">
+            <i class="bi bi-toggle-on"></i> الفصل النشط هو الذي يتم عرضه في القوائم الرئيسية
+          </div>
+        </div>
+        
+        <hr class="my-3">
+        
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-lg me-1"></i> حفظ
+          </button>
+          <a href="{% url 'semester_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-1"></i> إلغاء
+          </a>
+        </div>
+      </form>
+    </div>
+    
+    
+  </div>
+</div>
+{% endblock %}

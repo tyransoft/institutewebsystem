@@ -168,6 +168,9 @@ body { background: #f5f6fa; color: #1a2236; }
       <a href="{% url 'department_list' %}" class="nav-link {% if 'department' in request.resolver_match.url_name or 'specialization' in request.resolver_match.url_name %}active{% endif %}">
         الأقسام والتخصصات
       </a>
+      <a href="{% url 'semester_list' %}" class="nav-link">
+         الفصول الدراسية
+      </a>
       {% endif %}
       <p class="nav-section-label">المالية</p>
       

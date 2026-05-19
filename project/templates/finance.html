@@ -175,42 +175,12 @@
   </div>
 </div>
 
-<!-- إحصائيات سريعة للأقساط -->
-{% if installments %}
-<div class="row g-3 mt-2">
-  <div class="col-md-3">
-    <div class="stat-card text-center p-2">
-      <small class="text-muted">إجمالي الأقساط</small>
-      <div class="fw-bold fs-5">{{ installments|length }}</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="stat-card text-center p-2">
-      <small class="text-muted">إجمالي المبلغ المستحق</small>
-      <div class="fw-bold fs-5">{{ installments|sum_attribute:'amount'|floatformat:0 }} د.ل</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="stat-card text-center p-2">
-      <small class="text-muted">إجمالي المدفوع</small>
-      <div class="fw-bold fs-5 text-success">{{ installments|sum_attribute:'paid_amount'|floatformat:0 }} د.ل</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="stat-card text-center p-2">
-      <small class="text-muted">إجمالي المتبقي</small>
-      <div class="fw-bold fs-5 text-danger">{{ installments|sum_remaining|floatformat:0 }} د.ل</div>
-    </div>
-  </div>
-</div>
-{% endif %}
+
 
 {% endif %}
 
-<!-- ========== تبويب المدفوعات ========== -->
 {% if current_tab == 'payments' %}
 
-<!-- نموذج البحث في المدفوعات -->
 <div class="card mb-3">
   <div class="card-body">
     <form method="get" class="row g-3">

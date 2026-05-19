@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}الفصول الدراسية{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>الفصول الدراسية</h2>
+    <p>إدارة الفصول الدراسية للمعهد</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'semester_add' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i> إضافة فصل دراسي
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% for semester in semesters %}
+  <div class="col-md-6 col-lg-4">
+    <div class="table-card">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(217,4,41,.1);color:#d90429;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-calendar-week"></i>
+          </div>
+          <div>
+            <div class="fw-bold">{{ semester.name }}</div>
+            <small class="text-muted">{{ semester.academic_year }}</small>
+          </div>
+        </div>
+        <div class="d-flex gap-1">
+          <a href="{% url 'semester_edit' semester.pk %}" class="btn btn-sm btn-outline-primary" title="تعديل">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <a href="{% url 'semester_delete' semester.pk %}" class="btn btn-sm btn-outline-danger" title="حذف">
+            <i class="bi bi-trash"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="px-3 py-2 border-bottom">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">نوع الفصل:</span>
+          <span class="badge {% if semester.semester_type == 'first' %}bg-primary{% elif semester.semester_type == 'second' %}bg-success{% else %}bg-warning{% endif %}">
+            {{ semester.get_semester_type_display }}
+          </span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">تاريخ البدء:</span>
+          <span class="small" dir="ltr">{{ semester.start_date }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">تاريخ الانتهاء:</span>
+          <span class="small" dir="ltr">{{ semester.end_date }}</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted small">الحالة:</span>
+          {% if semester.is_active %}
+            <span class="badge bg-success">نشط</span>
+          {% else %}
+            <span class="badge bg-secondary">غير نشط</span>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="p-3 bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="small text-muted">
+            <i class="bi bi-people-fill me-1"></i> الطلاب: {{ semester.students.count }}
+          </div>
+          <div class="small text-muted">
+            <i class="bi bi-cash-stack me-1"></i> الأقساط: {{ semester.installments.count }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
+      <p>لا توجد فصول دراسية مضافة بعد</p>
+      <a href="{% url 'semester_add' %}" class="btn btn-primary btn-sm mt-2">
+        <i class="bi bi-plus-lg me-1"></i> أضف أول فصل دراسي
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+{% endblock %}

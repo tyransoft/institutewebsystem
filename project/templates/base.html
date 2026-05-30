@@ -237,6 +237,53 @@ setTimeout(() => {
   });
 }, 4000);
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            var buttons = this.querySelectorAll('button[type="submit"], input[type="submit"]');
+            buttons.forEach(function(btn) {
+                btn.disabled = true;
+                var originalText = btn.innerHTML;
+                btn.innerHTML = ' جاري...';
+                setTimeout(function() {
+                    if (btn.disabled) {
+                        btn.innerHTML = originalText;
+                    }
+                }, 3000);
+            });
+            return true;
+        });
+    });
+    
+    document.querySelectorAll('.btn-delete, .btn-danger').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            if (this.disabled) {
+                e.preventDefault();
+                return false;
+            }
+            var confirmMsg = this.getAttribute('data-confirm') || 'هل أنت متأكد؟';
+            if (!confirm(confirmMsg)) {
+                e.preventDefault();
+                return false;
+            }
+            this.disabled = true;
+            this.innerHTML = ' جاري...';
+        });
+    });
+});
+</script>
+
+<style>
+button:disabled, 
+input:disabled,
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+</style>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -103,7 +103,7 @@ class AcademicSemester(models.Model):
         ordering = ['-start_date']
     
     def __str__(self):
-        return f"{self.get_semester_type_display()} - {self.academic_year}"
+        return f"{self.name} - {self.academic_year}"
     
     def get_semester_type_display_ar(self):
         return dict(self.SEMESTER_TYPES).get(self.semester_type, self.semester_type)    

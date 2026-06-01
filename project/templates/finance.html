@@ -143,11 +143,12 @@
           </td>
           <td>
             <div class="d-flex gap-1">
-              
+                <a href="{% url 'installment_edit' inst.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+               <a href="{% url 'installment_delete' inst.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
               
               {% if inst.remaining_amount > 0 %}
               <a href="{% url 'payment_add' inst.pk %}" class="btn btn-sm btn-success" title="تسديد">
-                <i class="bi bi-cash-stack"></i> دفع
+                <i class="bi bi-cash-stack"></i> 
               </a>
               <button type="button" class="btn btn-sm btn-success" style="background-color: #25D366; border-color: #25D366;" 
                       onclick="sendWhatsappReminder('{{ inst.student.phone }}', '{{ inst.student.full_name }}', '{{ inst.remaining_amount|floatformat:0 }}', '{{ inst.semester.name|default:"القسط" }}', '{{ inst.due_date }}')" title="تذكير واتساب">

@@ -40,6 +40,8 @@ urlpatterns = [
     path('print/receipt/<int:payment_id>/', print_receipt, name='print_receipt'),
     path('api/search-students/', search_students, name='search_students'),
     path('api/search-installments/', search_installments, name='search_installments'),
+    path('finance/installment/edit/<int:pk>/', installment_edit, name='installment_edit'),
+    path('finance/installment/delete/<int:pk>/', installment_delete, name='installment_delete'),
 
     path('expenses/',expense_list, name='expense_list'),
     path('expenses/add/',expense_add, name='expense_add'),

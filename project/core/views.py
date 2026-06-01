@@ -22,7 +22,7 @@ from bidi.algorithm import get_display
 import arabic_reshaper
 from datetime import date, timedelta
 from django.utils import timezone
-
+from django.db import transaction
 
 
 def user_login(request):
@@ -332,6 +332,86 @@ def student_add(request):
     semesters=AcademicSemester.objects.all()    
     return render(request, 'student_form.html', {'form': form,'semesters':semesters})
 
+
+@login_required
+def installment_edit(request, pk):
+    installment = get_object_or_404(StudentInstallment, pk=pk)
+    old_student = installment.student
+    
+    if request.method == 'POST':
+        form = InstallmentForm(request.POST, instance=installment)
+        if form.is_valid():
+            with transaction.atomic():
+                installment = form.save(commit=False)
+                
+                if installment.paid_amount > installment.amount:
+                    messages.error(request, 'المبلغ المدفوع لا يمكن أن يتجاوز إجمالي القسط')
+                    return render(request, 'installment_form.html', {
+                        'form': form, 
+                        'title': 'تعديل القسط',
+                        'installment': installment
+                    })
+                
+                if installment.paid_amount >= installment.amount:
+                    installment.status = 'paid'
+                elif installment.paid_amount > 0:
+                    installment.status = 'partial'
+                else:
+                    installment.status = 'pending'
+                
+                installment.save()
+                
+                if old_student != installment.student:
+                    old_student.update_total_fees()
+                    installment.student.update_total_fees()
+                else:
+                    installment.student.update_total_fees()
+                
+                messages.success(request, f'تم تعديل القسط #{installment.id} بنجاح')
+                return redirect('finance')
+        else:
+            messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
+    else:
+        form = InstallmentForm(instance=installment)
+    
+    return render(request, 'installment_form.html', {
+        'form': form, 
+        'title': 'تعديل القسط',
+        'installment': installment
+    })
+
+
+@login_required
+def installment_delete(request, pk):
+    installment = get_object_or_404(StudentInstallment, pk=pk)
+    student = installment.student
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                installment_id = installment.id
+                installment.delete()
+                
+                student.update_total_fees()
+                
+                messages.success(request, f'تم حذف القسط #{installment_id} بنجاح')
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'message': 'تم الحذف بنجاح'})
+                
+                return redirect('finance')
+                
+        except Exception as e:
+            error_message = f'حدث خطأ أثناء حذف القسط: {str(e)}'
+            messages.error(request, error_message)
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': error_message})
+    
+    return render(request, 'installment_confirm_delete.html', {
+        'installment': installment,
+        'student': student
+    })
 
 
 @login_required

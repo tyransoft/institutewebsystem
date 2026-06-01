@@ -268,7 +268,7 @@ class InstallmentForm(forms.ModelForm):
             'due_date': 'تاريخ الاستحقاق',
             'notes': 'ملاحظات',
         }
-
+ 
 
 class PaymentForm(forms.ModelForm):
     class Meta:

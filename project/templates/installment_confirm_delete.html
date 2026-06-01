@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}حذف قسط{% endblock %}
+{% block page_title %}حذف قسط{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">تأكيد حذف القسط</span>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning" style="background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-left: 10px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <strong>تحذير!</strong> أنت على وشك حذف هذا القسط. هذا الإجراء لا يمكن التراجع عنه.
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h4>معلومات القسط:</h4>
+                <table style="width: 100%; margin-top: 10px;">
+                    <tr>
+                        <td style="padding: 8px;"><strong>الطالب:</strong></td>
+                        <td style="padding: 8px;">{{ student.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><strong>المبلغ:</strong></td>
+                        <td style="padding: 8px;">{{ installment.amount|floatformat:2 }} د.ل</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><strong>المبلغ المدفوع:</strong></td>
+                        <td style="padding: 8px;">{{ installment.paid_amount|floatformat:2 }} د.ل</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><strong>المتبقي:</strong></td>
+                        <td style="padding: 8px; color: #dc2626;">{{ installment.remaining_amount|floatformat:2 }} د.ل</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><strong>الحالة:</strong></td>
+                        <td style="padding: 8px;">
+                            {% if installment.status == 'paid' %}
+                                <span class="badge badge-success">مدفوع بالكامل</span>
+                            {% elif installment.status == 'partial' %}
+                                <span class="badge badge-warning">مدفوع جزئياً</span>
+                            {% else %}
+                                <span class="badge badge-secondary">قيد الانتظار</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;"><strong>تاريخ الاستحقاق:</strong></td>
+                        <td style="padding: 8px;">{{ installment.due_date|date:"Y-m-d"|default:"غير محدد" }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button type="submit" class="btn btn-danger" style="flex:1; background: #dc2626; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer;">
+                        تأكيد الحذف
+                    </button>
+                    <a href="{% url 'finance' %}" class="btn btn-outline" style="flex:1; text-align: center; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; text-decoration: none;">
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

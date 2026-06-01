@@ -538,7 +538,7 @@ body { background: #f5f6fa; color: #1a2236; }
         <div class="user-role">
           {% if request.user.is_authenticated %}
             {% get_user_role request.user as user_role %}
-            {% if user_role == 'admin %}مدير النظام
+            {% if user_role == 'admin' %}مدير النظام
             {% elif user_role == 'accountant' %}محاسب
             {% elif user_role == 'dataman' %}مدخل بيانات
             {% else %}مستخدم{% endif %}

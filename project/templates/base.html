@@ -473,37 +473,37 @@ input:disabled,
       <p class="nav-section-label">القائمة الرئيسية</p>
       {% if user_role == 'admin' or user_role == 'dataman' %}
       <a href="{% url 'student_list' %}" class="nav-link {% if 'student' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-people"></i> الطلاب
+         الطلاب
       </a>
       
       <a href="{% url 'department_list' %}" class="nav-link {% if 'department' in request.resolver_match.url_name or 'specialization' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-building"></i> الأقسام والتخصصات
+         الأقسام والتخصصات
       </a>
       <a href="{% url 'semester_list' %}" class="nav-link">
-        <i class="bi bi-calendar-week"></i> الفصول الدراسية
+         الفصول الدراسية
       </a>
       {% endif %}
       
       <p class="nav-section-label">المالية</p>
       <a href="{% url 'finance' %}" class="nav-link {% if request.resolver_match.url_name == 'finance' or 'payment' in request.resolver_match.url_name or 'installment' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-calculator"></i> الإدارة المالية
+       الإدارة المالية
       </a>
       
       <a href="{% url 'expense_list' %}" class="nav-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-receipt"></i> المصروفات
+         المصروفات
       </a>
       
       {% if user_role == 'admin' or user_role == 'accountant' %}
       <p class="nav-section-label">التحليل</p>
       <a href="{% url 'reports' %}" class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-graph-up"></i> التقارير
+        التقارير
       </a>
       {% endif %}
       
       {% if user_role == 'admin' %}
       <p class="nav-section-label">الإدارة</p>
       <a href="{% url 'user_list' %}" class="nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
-        <i class="bi bi-person-badge"></i> المستخدمون
+         المستخدمون
       </a>
       {% endif %}
     {% endif %}

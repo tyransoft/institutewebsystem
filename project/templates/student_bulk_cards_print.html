@@ -15,12 +15,12 @@
     body {
       font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
       background: #f0f2f5;
-      padding: 20px;
+      padding: 10px;
     }
     
     .print-actions {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       position: sticky;
       top: 10px;
       z-index: 100;
@@ -44,31 +44,29 @@
     
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(3, 85mm);
-      justify-content: center;
-      gap: 5mm;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
       margin: 0 auto;
-      width: fit-content;
+      max-width: 1200px;
     }
     
     .student-card {
-      width: 85mm;
-      height: 54mm;
       background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       overflow: hidden;
       border: 1px solid #e0e0e0;
       page-break-inside: avoid;
       break-inside: avoid;
+      height: auto;
     }
     
     .card-header {
       background: linear-gradient(135deg, #d90429 0%, #8b0000 100%);
       color: white;
-      padding: 5px 8px;
+      padding: 6px 4px;
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       white-space: nowrap;
       overflow: hidden;
@@ -76,9 +74,9 @@
     }
     
     .card-body {
-      padding: 8px 10px;
+      padding: 8px 6px;
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
     
     .photo-section {
@@ -87,8 +85,8 @@
     }
     
     .student-photo {
-      width: 65px;
-      height: 65px;
+      width: 55px;
+      height: 55px;
       border-radius: 8px;
       overflow: hidden;
       border: 2px solid #d90429;
@@ -102,36 +100,41 @@
     }
     
     .photo-placeholder {
-      width: 65px;
-      height: 65px;
+      width: 55px;
+      height: 55px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-size: 28px;
+      font-size: 24px;
     }
     
     .info-section {
       flex: 1;
+      min-width: 0;
     }
     
     .info-row {
-      margin-bottom: 4px;
-      font-size: 9px;
-      line-height: 1.3;
+      margin-bottom: 3px;
+      font-size: 8px;
+      line-height: 1.2;
+      display: flex;
+      flex-wrap: wrap;
     }
     
     .info-label {
       font-weight: bold;
       color: #555;
-      display: inline-block;
-      min-width: 55px;
+      min-width: 50px;
+      font-size: 7px;
     }
     
     .info-value {
       color: #333;
-      font-size: 9px;
+      font-size: 8px;
+      flex: 1;
+      word-break: break-word;
     }
     
     .qr-section {
@@ -140,31 +143,38 @@
     }
     
     .qr-code {
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       background: #f0f0f0;
       border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
+      font-size: 9px;
       color: #999;
+      border: 1px solid #ddd;
+      font-family: monospace;
     }
     
     .card-footer {
       background: #f8f9fa;
       padding: 3px;
       text-align: center;
-      font-size: 7px;
+      font-size: 6px;
       color: #666;
       border-top: 1px solid #e0e0e0;
     }
     
-    .page-info {
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+    
+    .print-hint {
       text-align: center;
-      margin: 10px 0;
+      margin-top: 20px;
       font-size: 12px;
-      color: #555;
+      color: #888;
     }
     
     @media print {
@@ -178,9 +188,14 @@
         display: none !important;
       }
       
+      .print-hint {
+        display: none !important;
+      }
+      
       .cards-grid {
-        gap: 3mm;
-        margin: 0 auto;
+        gap: 5px;
+        margin: 0;
+        max-width: 100%;
       }
       
       .student-card {
@@ -200,13 +215,25 @@
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;
       }
+      
+      .qr-code {
+        border: 1px solid #ccc;
+      }
     }
     
-    .print-hint {
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+    }
+    
+    .page-number {
       text-align: center;
-      margin-top: 20px;
-      font-size: 12px;
-      color: #888;
+      font-size: 9px;
+      color: #999;
+      margin-top: 5px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -217,11 +244,18 @@
     </button>
   </div>
   
-  <div class="cards-grid">
-    {% for student in students %}
+  {% for student in students %}
+    {% if forloop.counter0|divisibleby:10 and not forloop.first %}
+      </div>
+      <div class="page-number">صفحة {{ forloop.counter|add:"-1"|divisibleby:10|add:forloop.counter|divisibleby:10|add:1 }}</div>
+      <div class="cards-grid">
+    {% elif forloop.first %}
+      <div class="cards-grid">
+    {% endif %}
+    
     <div class="student-card">
       <div class="card-header">
-        {{ school_name|truncatechars:25 }}
+        {{ school_name|truncatechars:20 }}
       </div>
       <div class="card-body">
         <div class="photo-section">
@@ -237,38 +271,44 @@
         <div class="info-section">
           <div class="info-row">
             <span class="info-label">الاسم:</span>
-            <span class="info-value">{{ student.full_name|truncatechars:18 }}</span>
+            <span class="info-value">{{ student.full_name }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">رقم القيد:</span>
-            <span class="info-value">{{ student.registration_number }}</span>
+            <span class="info-value">{{ student.registration_number}}</span>
           </div>
           <div class="info-row">
             <span class="info-label">رقم الجلوس:</span>
-            <span class="info-value">{{ student.seat_number|default:student.id }}</span>
+            <span class="info-value">{{ student.student.id }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">القسم:</span>
-            <span class="info-value">{{ student.department.name|default:"-"|truncatechars:12 }}</span>
+            <span class="info-value">{{ student.department.name|default:"-"}}</span>
           </div>
           <div class="info-row">
             <span class="info-label">التخصص:</span>
-            <span class="info-value">{{ student.specialization.name|default:"-"|truncatechars:12 }}</span>
+            <span class="info-value">{{ student.specialization.name|default:"-"}}</span>
           </div>
         </div>
         
-       
+        
       </div>
-      <div class="card-footer">
-        صادرة بتاريخ: {{ print_date|date:"Y/m/d" }}
+     
+    </div>
+    
+    {% if forloop.last %}
+      </div>
+      <div class="page-number">صفحة {{ forloop.counter|divisibleby:10|add:forloop.counter|add:9|divisibleby:10|add:1 }}</div>
+    {% endif %}
+  {% empty %}
+    <div class="cards-grid">
+      <div class="student-card" style="grid-column: span 5; text-align: center; padding: 20px;">
+        لا توجد بطاقات للطباعة
       </div>
     </div>
-    {% endfor %}
-  </div>
+  {% endfor %}
   
-  <div class="print-hint">
-    💡 نصيحة: عند الطباعة، اختر "ملاءمة للصفحة" أو scale 100%، واتجاه "عمودي" (Portrait)
-  </div>
+
   
   <script>
     document.addEventListener('keydown', function(e) {
@@ -277,6 +317,11 @@
         window.print();
       }
     });
+    
+    const totalCards = {{ students|length }};
+    const pagesCount = Math.ceil(totalCards / 10);
+    console.log(` إجمالي البطاقات: ${totalCards}`);
+    console.log(` عدد الصفحات للطباعة: ${pagesCount} صفحة (كل صفحة 10 بطاقات)`);
   </script>
 </body>
 </html>

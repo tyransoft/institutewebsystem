@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بطاقات تعريف الطلاب</title>
+  <title>طباعة بطاقات الطلاب - {{ school_name }}</title>
   <style>
     * {
       margin: 0;
@@ -14,52 +14,84 @@
     
     body {
       font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
-      background: white;
+      background: #f0f2f5;
       padding: 20px;
     }
     
-    .cards-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+    .print-actions {
+      text-align: center;
       margin-bottom: 20px;
+      position: sticky;
+      top: 10px;
+      z-index: 100;
+    }
+    
+    .print-btn {
+      background: linear-gradient(135deg, #d90429 0%, #8b0000 100%);
+      color: white;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .print-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 85mm);
+      justify-content: center;
+      gap: 5mm;
+      margin: 0 auto;
+      width: fit-content;
     }
     
     .student-card {
-      width: 100%;
+      width: 85mm;
+      height: 54mm;
       background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-      border-radius: 10px;
+      border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       overflow: hidden;
       border: 1px solid #e0e0e0;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
     
     .card-header {
       background: linear-gradient(135deg, #d90429 0%, #8b0000 100%);
       color: white;
-      padding: 6px;
+      padding: 5px 8px;
       text-align: center;
       font-size: 12px;
       font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .card-body {
-      padding: 10px;
+      padding: 8px 10px;
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
     
     .photo-section {
       flex-shrink: 0;
+      text-align: center;
     }
     
     .student-photo {
-      width: 70px;
-      height: 70px;
+      width: 65px;
+      height: 65px;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid #d90429;
+      border: 2px solid #d90429;
       background: #f0f0f0;
     }
     
@@ -70,8 +102,8 @@
     }
     
     .photo-placeholder {
-      width: 70px;
-      height: 70px;
+      width: 65px;
+      height: 65px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
@@ -86,82 +118,110 @@
     
     .info-row {
       margin-bottom: 4px;
-      font-size: 10px;
+      font-size: 9px;
+      line-height: 1.3;
     }
     
     .info-label {
       font-weight: bold;
       color: #555;
       display: inline-block;
-      min-width: 65px;
+      min-width: 55px;
     }
     
     .info-value {
       color: #333;
+      font-size: 9px;
     }
     
     .qr-section {
       flex-shrink: 0;
+      text-align: center;
     }
     
     .qr-code {
-      width: 55px;
-      height: 55px;
-    }
-    
-    .qr-code img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+      width: 50px;
+      height: 50px;
+      background: #f0f0f0;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #999;
     }
     
     .card-footer {
       background: #f8f9fa;
-      padding: 4px;
+      padding: 3px;
       text-align: center;
-      font-size: 8px;
+      font-size: 7px;
       color: #666;
       border-top: 1px solid #e0e0e0;
     }
     
-    .print-header {
+    .page-info {
       text-align: center;
-      margin-bottom: 20px;
-      padding: 10px;
-      border-bottom: 2px solid #d90429;
-    }
-    
-    .print-header h2 {
-      color: #d90429;
-      margin-bottom: 5px;
+      margin: 10px 0;
+      font-size: 12px;
+      color: #555;
     }
     
     @media print {
       body {
+        background: white;
         padding: 0;
         margin: 0;
       }
-      .cards-container {
-        gap: 10px;
+      
+      .print-actions {
+        display: none !important;
       }
+      
+      .cards-grid {
+        gap: 3mm;
+        margin: 0 auto;
+      }
+      
       .student-card {
         box-shadow: none;
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
         break-inside: avoid;
       }
+      
+      .card-header {
+        background: #d90429 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      
+      .student-card {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+    }
+    
+    .print-hint {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #888;
     }
   </style>
 </head>
 <body>
-  <div class="print-header">
-    <h2>{{ school_name }}</h2>
-    <p>بطاقات تعريف الطلاب - تاريخ الطباعة: {{ print_date|date:"Y/m/d" }}</p>
+  <div class="print-actions">
+    <button class="print-btn" onclick="window.print();">
+      🖨️ طباعة جميع البطاقات ({{ students|length }} بطاقة)
+    </button>
   </div>
   
-  <div class="cards-container">
+  <div class="cards-grid">
     {% for student in students %}
     <div class="student-card">
       <div class="card-header">
-        بطاقة تعريف طالب
+        {{ school_name|truncatechars:25 }}
       </div>
       <div class="card-body">
         <div class="photo-section">
@@ -169,9 +229,7 @@
             {% if student.photo and student.photo.url %}
             <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
             {% else %}
-            <div class="photo-placeholder">
-              <i class="fas fa-user"></i>
-            </div>
+            <div class="photo-placeholder">👤</div>
             {% endif %}
           </div>
         </div>
@@ -179,35 +237,46 @@
         <div class="info-section">
           <div class="info-row">
             <span class="info-label">الاسم:</span>
-            <span class="info-value">{{ student.full_name }}</span>
+            <span class="info-value">{{ student.full_name|truncatechars:18 }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">رقم القيد:</span>
             <span class="info-value">{{ student.registration_number }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">القسم:</span>
-            <span class="info-value">{{ student.department.name|default:"-" }}</span>
+            <span class="info-label">رقم الجلوس:</span>
+            <span class="info-value">{{ student.seat_number|default:student.id }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">العام:</span>
-            <span class="info-value">{{ student.academic_year }}</span>
+            <span class="info-label">القسم:</span>
+            <span class="info-value">{{ student.department.name|default:"-"|truncatechars:12 }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">التخصص:</span>
+            <span class="info-value">{{ student.specialization.name|default:"-"|truncatechars:12 }}</span>
           </div>
         </div>
         
-        <div class="qr-section">
-          <div class="qr-code">
-            {% if student.qr_info and student.qr_info.url %}
-            <img src="{{ student.qr_info.url }}" alt="QR Code">
-            {% endif %}
-          </div>
-        </div>
+       
       </div>
       <div class="card-footer">
-        {{ school_name }} - {{ student.academic_year }}
+        صادرة بتاريخ: {{ print_date|date:"Y/m/d" }}
       </div>
     </div>
     {% endfor %}
   </div>
+  
+  <div class="print-hint">
+    💡 نصيحة: عند الطباعة، اختر "ملاءمة للصفحة" أو scale 100%، واتجاه "عمودي" (Portrait)
+  </div>
+  
+  <script>
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        window.print();
+      }
+    });
+  </script>
 </body>
 </html>

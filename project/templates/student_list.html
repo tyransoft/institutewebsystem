@@ -6,13 +6,21 @@
     <h2>سجل الطلاب</h2>
     <p>إدارة وعرض بيانات الطلاب المسجلين</p>
   </div>
-  <a href="{% url 'student_add' %}" class="btn btn-primary">
-    <i class="bi bi-plus-lg me-1"></i> إضافة طالب
-  </a>
+  <div class="d-flex gap-2">
+    <button type="button" class="btn btn-success" id="printSelectedBtn" onclick="printSelectedStudents()" disabled>
+      <i class="bi bi-printer me-1"></i> طباعة البطاقات (0)
+    </button>
+    <button type="button" class="btn btn-secondary" id="selectAllBtn" onclick="toggleSelectAll()">
+      <i class="bi bi-check-all me-1"></i> تحديد الكل
+    </button>
+    <a href="{% url 'student_add' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i> إضافة طالب
+    </a>
+  </div>
 </div>
 
 <div class="table-card mb-3 p-3">
-  <form method="get" class="row g-2">
+  <form method="get" class="row g-2" id="searchForm">
     <div class="col-md-4">
       <input type="text" name="q" class="form-control" placeholder="ابحث بالاسم أو رقم التسجيل أو الهاتف..." value="{{ q }}">
     </div>
@@ -40,54 +48,65 @@
 </div>
 
 <div class="table-card">
-  <table class="table table-hover mb-0">
-    <thead>
-      <tr>
-        <th>رقم التسجيل</th>
-        <th>اسم الطالب</th>
-        <th>القسم / التخصص</th>
-        <th>إجمالي الرسوم</th>
-        <th>الرصيد المتبقي</th>
-        <th>الحالة</th>
-        <th>الإجراءات</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for student in students %}
-      <tr>
-        <td dir="ltr" class="font-monospace">{{ student.registration_number }}</td>
-        <td class="fw-semibold">{{ student.full_name }}</td>
-        <td>
-          <div>{{ student.department.name|default:"—" }}</div>
-          <small class="text-muted">{{ student.specialization.name|default:"" }}</small>
-        </td>
-        <td>د.ل {{ student.total_fees|floatformat:0 }}</td>
-        <td class="{% if student.balance > 0 %}text-danger fw-semibold{% else %}text-success{% endif %}">
-         د.ل {{ student.balance|floatformat:0 }}
-        </td>
-        <td>
-          <span class="status-badge badge-{{ student.status }}">{{ student.get_status_display_ar }}</span>
-        </td>
-        <td>
-          <div class="d-flex gap-1">
-            <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-outline-secondary" title="عرض">
-              <i class="bi bi-eye"></i>
-            </a>
-            <a href="{% url 'student_edit' student.pk %}" class="btn btn-sm btn-outline-primary" title="تعديل">
-              <i class="bi bi-pencil"></i>
-            </a>
-            <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-outline-danger">
-               <i class="bi bi-trash me-1"></i>
-            </a> 
-         
-          </div>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="8" class="text-center py-4 text-muted">لا يوجد طلاب مطابقون للبحث</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <form method="post" action="{% url 'student_bulk_cards' %}" target="_blank" id="bulkPrintForm">
+    {% csrf_token %}
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th style="width: 40px;">
+            <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll()" style="cursor: pointer;">
+          </th>
+          <th>رقم التسجيل</th>
+          <th>اسم الطالب</th>
+          <th>القسم / التخصص</th>
+          <th>إجمالي الرسوم</th>
+          <th>الرصيد المتبقي</th>
+          <th>الحالة</th>
+          <th>الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <td>
+            <input type="checkbox" name="student_ids" value="{{ student.id }}" class="student-checkbox" onclick="updatePrintButton()">
+          </td>
+          <td dir="ltr" class="font-monospace">{{ student.registration_number }}</td>
+          <td class="fw-semibold">{{ student.full_name }}</td>
+          <td>
+            <div>{{ student.department.name|default:"—" }}</div>
+            <small class="text-muted">{{ student.specialization.name|default:"" }}</small>
+          </td>
+          <td>د.ل {{ student.total_fees|floatformat:0 }}</td>
+          <td class="{% if student.balance > 0 %}text-danger fw-semibold{% else %}text-success{% endif %}">
+            د.ل {{ student.balance|floatformat:0 }}
+          </td>
+          <td>
+            <span class="status-badge badge-{{ student.status }}">{{ student.get_status_display_ar }}</span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-outline-secondary" title="عرض">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'student_edit' student.pk %}" class="btn btn-sm btn-outline-primary" title="تعديل">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash me-1"></i>
+              </a> 
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center py-4 text-muted">لا يوجد طلاب مطابقون للبحث</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </form>
+  
   {% if page_obj.has_other_pages %}
   <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
     <small class="text-muted">
@@ -107,4 +126,109 @@
   </div>
   {% endif %}
 </div>
+
+<style>
+  .student-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  
+  #selectAllCheckbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  
+  .btn-success:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+</style>
+
+<script>
+  function updatePrintButton() {
+    const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+    const count = checkboxes.length;
+    const printBtn = document.getElementById('printSelectedBtn');
+    
+    if (count > 0) {
+      printBtn.disabled = false;
+      printBtn.innerHTML = `<i class="bi bi-printer me-1"></i> طباعة البطاقات (${count})`;
+    } else {
+      printBtn.disabled = true;
+      printBtn.innerHTML = `<i class="bi bi-printer me-1"></i> طباعة البطاقات (0)`;
+    }
+    
+    const allCheckboxes = document.querySelectorAll('.student-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    
+    if (allCheckboxes.length > 0) {
+      const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+      selectAllCheckbox.checked = allChecked;
+    }
+  }
+  
+  function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updatePrintButton();
+  }
+  
+  function printSelectedStudents() {
+    const form = document.getElementById('bulkPrintForm');
+    const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+      alert('الرجاء تحديد طالب واحد على الأقل لطباعة البطاقة');
+      return;
+    }
+    
+    const oldInputs = form.querySelectorAll('input[name="student_ids"]');
+    oldInputs.forEach(input => {
+      if (!input.classList.contains('student-checkbox')) {
+        input.remove();
+      }
+    });
+    
+    checkboxes.forEach(checkbox => {
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'student_ids';
+      hiddenInput.value = checkbox.value;
+      form.appendChild(hiddenInput);
+    });
+    
+    form.submit();
+    
+    setTimeout(() => {
+      const extraInputs = form.querySelectorAll('input[name="student_ids"]:not(.student-checkbox)');
+      extraInputs.forEach(input => input.remove());
+    }, 100);
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', updatePrintButton);
+    });
+    
+    updatePrintButton();
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+      const activeElement = document.activeElement;
+      if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        toggleSelectAll();
+      }
+    }
+  });
+</script>
 {% endblock %}

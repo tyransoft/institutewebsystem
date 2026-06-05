@@ -714,7 +714,11 @@ def student_print_card(request, pk):
 
 @login_required
 def student_bulk_cards(request):
-    student_ids = request.GET.getlist('student_ids')
+    if request.method == 'POST':
+        student_ids = request.POST.getlist('student_ids')
+    else:
+        student_ids = request.GET.getlist('student_ids')
+    
     if student_ids:
         students = Student.objects.filter(id__in=student_ids)
     else:

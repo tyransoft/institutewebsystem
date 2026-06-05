@@ -31,8 +31,8 @@ urlpatterns = [
     path('students/<int:pk>/edit/', student_edit, name='student_edit'),
     path('students/<int:pk>/delete/', student_delete, name='student_delete'),
     path('student/<int:pk>/print-card/', student_print_card, name='student_print_card'),
-    path('students/print-bulk-cards/', student_bulk_cards, name='student_bulk_cards'),
     path('send-whatsapp-pdf/<int:pk>/', send_whatsapp_pdf, name='send_whatsapp_pdf'),
+    path('students/bulk-cards/', student_bulk_cards, name='student_bulk_cards'),
 
     path('finance/', finance, name='finance'),
     path('finance/payment/add/<int:pk>', installment_payment_add, name='payment_add'),

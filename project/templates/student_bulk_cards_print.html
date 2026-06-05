@@ -43,15 +43,10 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     
-    .page {
-      width: 210mm;
-      min-height: 297mm;
-      margin: 0 auto 20px auto;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      page-break-after: always;
-      break-after: page;
-      padding: 10mm 5mm;
+
+    .page:last-child {
+      page-break-after: auto;
+      break-after: auto;
     }
     
     .cards-grid {
@@ -192,6 +187,11 @@
         break-after: page;
       }
       
+      .page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+      
       .student-card {
         box-shadow: none;
         page-break-inside: avoid;
@@ -219,76 +219,70 @@
     </button>
   </div>
   
-  {% for student in students %}
-    {% if forloop.counter0|divisibleby:8 %}
-      {% if not forloop.first %}
-          </div>
-          <div class="page-number">صفحة {{ forloop.counter0|divisibleby:8|add:forloop.counter|add:"-1"|divisibleby:8|add:1 }}</div>
-        </div>
-      {% endif %}
-      <div class="page">
-        <div class="cards-grid">
-    {% endif %}
-    
-    <div class="student-card">
-      <div class="card-header">
-        {{ school_name }}   بطاقة طالب
-      </div>
-      <div class="card-body">
-        <div class="photo-section">
-          <div class="student-photo">
-            {% if student.photo and student.photo.url %}
-            <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
-            {% else %}
-            <div class="photo-placeholder">
-              👤
+  {% with students_list=students %}
+    {% for student in students_list %}
+      {% if forloop.counter0 == 0 or forloop.counter0 == 8 %}
+        {% if not forloop.first %}
+              </div>
+              <div class="page-number">صفحة {{ forloop.counter0|add:7|divisibleby:8|add:forloop.counter0|add:8|divisibleby:8|add:1 }}</div>
             </div>
-            {% endif %}
+          {% endif %}
+          <div class="page">
+            <div class="cards-grid">
+        {% endif %}
+        
+        <div class="student-card">
+          <div class="card-header">
+            {{ school_name }}   بطاقة طالب
           </div>
+          <div class="card-body">
+            <div class="photo-section">
+              <div class="student-photo">
+                {% if student.photo and student.photo.url %}
+                <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+                {% else %}
+                <div class="photo-placeholder">
+                  👤
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="info-section">
+              <div class="info-row">
+                <span class="info-label">الاسم:</span>
+                <span class="info-value">{{ student.full_name }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">رقم القيد:</span>
+                <span class="info-value">{{ student.registration_number }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">رقم الجلوس:</span>
+                <span class="info-value">{{ student.student.id }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">القسم:</span>
+                <span class="info-value">{{ student.department.name|default:"-" }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">التخصص:</span>
+                <span class="info-value">{{ student.specialization.name|default:"-" }}</span>
+              </div>
+            </div>
+            
+            
+          </div>
+          
         </div>
         
-        <div class="info-section">
-          <div class="info-row">
-            <span class="info-label">الاسم:</span>
-            <span class="info-value">{{ student.full_name }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">رقم القيد:</span>
-            <span class="info-value">{{ student.registration_number }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">رقم الجلوس:</span>
-            <span class="info-value">{{ student.student.id }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">القسم:</span>
-            <span class="info-value">{{ student.department.name|default:"-" }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">التخصص:</span>
-            <span class="info-value">{{ student.specialization.name|default:"-" }}</span>
-          </div>
-        </div>
-        
-       
-      </div>
-      
-    </div>
-    
-    {% if forloop.last %}
-        </div>
-        <div class="page-number">صفحة {{ forloop.counter|divisibleby:8|add:forloop.counter|add:7|divisibleby:8|add:1 }}</div>
-      </div>
-    {% endif %}
-  {% empty %}
-    <div class="page">
-      <div class="cards-grid">
-        <div style="grid-column: span 2; text-align: center; padding: 50px;">
-          لا توجد بطاقات للطباعة
-        </div>
-      </div>
-    </div>
-  {% endfor %}
+        {% if forloop.last %}
+              </div>
+              <div class="page-number">صفحة {{ forloop.counter|add:7|divisibleby:8|add:forloop.counter|add:7|divisibleby:8|add:1 }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+  {% endwith %}
   
   <script>
     document.addEventListener('keydown', function(e) {

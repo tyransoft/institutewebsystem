@@ -56,6 +56,14 @@ urlpatterns = [
     path('reports/students/',students_report, name='students_report'),
     path('reports/students/print/', print_students_report, name='students_report_print'),
 
-
+    path('hr/dashboard/', dashboard_hr, name='hr_dashboard'),
+    path('hr/employees/', employee_list, name='employee_list'),
+    path('hr/employees/create/', employee_create, name='employee_create'),
+    path('hr/employees/<int:pk>/edit/', employee_edit, name='employee_edit'),
+    path('hr/attendance/', attendance_list, name='attendance_list'),
+    path('hr/attendance/create/', attendance_create, name='attendance_create'),
+    path('hr/payroll/', payroll_list, name='payroll_list'),
+    path('hr/payroll/create/', payroll_create, name='payroll_create'),
+    path('hr/payroll/<int:payroll_id>/pay/', payroll_payment_create, name='payroll_payment_create'),
 
 ]

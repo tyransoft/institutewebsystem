@@ -1272,3 +1272,153 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
+
+
+
+@login_required
+def employee_list(request):
+    employees = Employee.objects.all()
+    return render(request, 'employee_list.html', {
+        'employees': employees,
+        'page_title': 'إدارة الموظفين',
+        'mobile_title': 'الموظفين'
+    })
+
+@login_required
+def employee_create(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES)
+        if form.is_valid():
+            employee = form.save()
+            messages.success(request, f'تم إضافة الموظف {employee.full_name} بنجاح')
+            return redirect('employee_list')
+    else:
+        form = EmployeeForm()
+    return render(request, 'employee_form.html', {
+        'form': form,
+        'title': 'إضافة موظف جديد',
+        'page_title': 'إضافة موظف جديد',
+        'mobile_title': 'إضافة موظف'
+    })
+
+@login_required
+def employee_edit(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES, instance=employee)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'تم تعديل بيانات الموظف {employee.full_name} بنجاح')
+            return redirect('employee_list')
+    else:
+        form = EmployeeForm(instance=employee)
+    return render(request, 'employee_form.html', {
+        'form': form,
+        'employee': employee,
+        'title': 'تعديل بيانات موظف',
+        'page_title': f'تعديل بيانات {employee.full_name}',
+        'mobile_title': 'تعديل موظف'
+    })
+
+@login_required
+def attendance_list(request):
+    attendances = Attendance.objects.all().select_related('employee')
+    return render(request, 'attendance_list.html', {
+        'attendances': attendances,
+        'page_title': 'سجل الحضور والغياب',
+        'mobile_title': 'الحضور والغياب'
+    })
+
+@login_required
+def attendance_create(request):
+    if request.method == 'POST':
+        form = AttendanceForm(request.POST)
+        if form.is_valid():
+            attendance = form.save()
+            messages.success(request, f'تم تسجيل حضور {attendance.employee.full_name} بتاريخ {attendance.date}')
+            return redirect('attendance_list')
+    else:
+        form = AttendanceForm()
+    return render(request, 'attendance_form.html', {
+        'form': form,
+        'title': 'تسجيل حضور/غياب',
+        'page_title': 'تسجيل حضور وغياب',
+        'mobile_title': 'تسجيل حضور'
+    })
+
+@login_required
+def payroll_list(request):
+    payrolls = Payroll.objects.all().select_related('employee')
+    return render(request, 'payroll_list.html', {
+        'payrolls': payrolls,
+        'page_title': 'كشوف الرواتب',
+        'mobile_title': 'الرواتب'
+    })
+
+@login_required
+def payroll_create(request):
+    if request.method == 'POST':
+        form = PayrollForm(request.POST)
+        if form.is_valid():
+            payroll = form.save()
+            messages.success(request, f'تم إنشاء كشف الراتب للموظف {payroll.employee.full_name}')
+            return redirect('payroll_list')
+    else:
+        form = PayrollForm()
+    return render(request, 'payroll_form.html', {
+        'form': form,
+        'title': 'إنشاء كشف راتب جديد',
+        'page_title': 'إنشاء كشف راتب',
+        'mobile_title': 'كشف راتب جديد'
+    })
+
+@login_required
+def payroll_payment_create(request, payroll_id):
+    payroll = get_object_or_404(Payroll, pk=payroll_id)
+    if request.method == 'POST':
+        form = PayrollPaymentForm(request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.created_by = request.user
+            payment.save()
+            messages.success(request, f'تم تسديد راتب {payment.employee.full_name} بقيمة {payment.amount}')
+            return redirect('payroll_list')
+    else:
+        form = PayrollPaymentForm(initial={
+            'payroll': payroll,
+            'employee': payroll.employee,
+            'amount': payroll.net_salary,
+            'payment_date': date.today()
+        })
+    return render(request, 'payroll_payment_form.html', {
+        'form': form,
+        'payroll': payroll,
+        'title': 'تسديد راتب',
+        'page_title': f'تسديد راتب {payroll.employee.full_name}',
+        'mobile_title': 'تسديد راتب'
+    })
+
+@login_required
+def dashboard_hr(request):
+    total_employees = Employee.objects.count()
+    active_employees = Employee.objects.filter(status='active').count()
+    today = date.today()
+    today_attendances = Attendance.objects.filter(date=today).count()
+    pending_payrolls = Payroll.objects.filter(status='pending').count()
+    
+    this_week_start = today - timedelta(days=today.weekday() + 1)
+    weekly_attendances = Attendance.objects.filter(date__gte=this_week_start).values('status').annotate(count=Count('id'))
+    
+    employees_by_type = Employee.objects.values('payment_type').annotate(count=Count('id'))
+    
+    context = {
+        'total_employees': total_employees,
+        'active_employees': active_employees,
+        'today_attendances': today_attendances,
+        'pending_payrolls': pending_payrolls,
+        'weekly_attendances': weekly_attendances,
+        'employees_by_type': employees_by_type,
+        'page_title': 'لوحة تحكم الموارد البشرية',
+        'mobile_title': 'HR Dashboard'
+    }
+    return render(request, 'hr_dashboard.html', context)

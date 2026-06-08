@@ -492,8 +492,20 @@ input:disabled,
       <a href="{% url 'expense_list' %}" class="nav-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
          المصروفات
       </a>
-      
-      {% if user_role == 'admin' or user_role == 'accountant' %}
+       {% if user_role == 'admin' or user_role == 'accountant' %}
+      <p class="nav-section-label">الموارد البشرية</p>
+        <a href="{% url 'hr_dashboard' %}" class="nav-link">
+          <i class="bi bi-people"></i> لوحة الموارد البشرية
+        </a>
+        <a href="{% url 'employee_list' %}" class="nav-link">
+           <i class="bi bi-person-badge"></i> الموظفون
+        </a>
+        <a href="{% url 'attendance_list' %}" class="nav-link">
+          <i class="bi bi-calendar-check"></i> الحضور والغياب
+        </a>
+        <a href="{% url 'payroll_list' %}" class="nav-link">
+          <i class="bi bi-wallet2"></i> الرواتب
+        </a>
       <p class="nav-section-label">التحليل</p>
       <a href="{% url 'reports' %}" class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}">
         التقارير

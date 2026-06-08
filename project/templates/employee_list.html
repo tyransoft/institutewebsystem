@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}إدارة الموظفين{% endblock %}
+{% block mobile_title %}الموظفين{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h5 class="mb-0">قائمة الموظفين</h5>
+    <a href="{% url 'employee_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> موظف جديد
+    </a>
+</div>
+
+<div class="table-card">
+    <table class="table table-hover mb-0">
+        <thead>
+            <tr>
+                <th>#</th><th>الاسم</th><th>الوظيفة</th><th>نظام الدفع</th><th>الحالة</th><th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr>
+                <td>{{ emp.employee_number }}</td>
+                <td>{{ emp.full_name }}</td>
+                <td>{{ emp.position }}</td>
+                <td>{{ emp.get_payment_type_display }}</td>
+                <td>
+                    <span class="badge {% if emp.status == 'active' %}bg-success{% elif emp.status == 'inactive' %}bg-secondary{% else %}bg-warning{% endif %}">
+                        {{ emp.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'employee_edit' emp.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">لا يوجد موظفون</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

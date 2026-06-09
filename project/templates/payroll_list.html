@@ -40,9 +40,9 @@
                 <td>
                     <small>{{ payroll.period_start|date:"Y-m-d" }}<br>إلى {{ payroll.period_end|date:"Y-m-d" }}</small>
                 </td>
-                <td>{{ payroll.base_salary|floatformat:0 }} ل.س</td>
-                <td class="text-danger">{{ payroll.total_deductions|floatformat:0 }} ل.س</td>
-                <td class="fw-bold">{{ payroll.net_salary|floatformat:0 }} ل.س</td>
+                <td>{{ payroll.base_salary|floatformat:0 }} د.ل</td>
+                <td class="text-danger">{{ payroll.total_deductions|floatformat:0 }}د.ل</td>
+                <td class="fw-bold">{{ payroll.net_salary|floatformat:0 }}د.ل</td>
                 <td>
                     <span class="badge {% if payroll.status == 'paid' %}bg-success{% elif payroll.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
                         {{ payroll.get_status_display }}

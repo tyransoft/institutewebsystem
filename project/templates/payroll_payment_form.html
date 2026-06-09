@@ -12,7 +12,7 @@
     <div class="card-body">
         <div class="alert alert-info mb-3">
             <strong>الموظف:</strong> {{ payroll.employee.full_name }}<br>
-            <strong>صافي المرتب المستحق:</strong> {{ payroll.net_salary|floatformat:0 }} ل.س<br>
+            <strong>صافي المرتب المستحق:</strong> {{ payroll.net_salary|floatformat:0 }} د.ل<br>
             <strong>الفترة:</strong> {{ payroll.period_start|date:"Y-m-d" }} إلى {{ payroll.period_end|date:"Y-m-d" }}
         </div>
         

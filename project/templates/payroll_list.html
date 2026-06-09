@@ -49,12 +49,13 @@
                     </span>
                 </td>
                 <td>
-                    <a href="{% url 'payroll_delete' payroll.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
 
                     {% if payroll.status == 'pending' %}
                     <a href="{% url 'payroll_payment_create' payroll.pk %}" class="btn btn-sm btn-success">
                          تسديد
                     </a>
+                    <a href="{% url 'payroll_delete' payroll.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+
                     {% else %}
                     <button class="btn btn-sm btn-outline-secondary" disabled>
                         مدفوع

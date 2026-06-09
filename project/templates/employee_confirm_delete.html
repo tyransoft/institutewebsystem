@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block page_title %}{{ page_title }}{% endblock %}
-{% block mobile_title %}{{ mobile_title }}{% endblock %}
+{% block page_title %}حذف موظف{% endblock %}
+{% block mobile_title %}حذف موظف{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -21,17 +21,16 @@
                 
                 <div class="alert alert-warning">
                     <strong>{{ employee.full_name }}</strong><br>
-                    <small>{{ employee.position }} - {{ employee.employee_number }}</small>
+                    <small>{{ employee.position }}</small>
                 </div>
                 
                 <div class="alert alert-danger">
                     <i class="bi bi-info-circle"></i>
-                    <strong>تحذير: سيتم حذف البيانات التالية بشكل نهائي:</strong>
+                    <strong>تحذير: سيتم حذف جميع البيانات المرتبطة</strong>
                     <ul class="text-start mt-2 mb-0">
-                        <li> {{ payroll_count }} كشف/كشوف راتب</li>
-                        <li> {{ attendance_count }} سجل/سجلات حضور وغياب</li>
-                        <li> جميع مدفوعات الرواتب المرتبطة</li>
-                        <li> بيانات الموظف الشخصية</li>
+                        <li>سجل الغيابات</li>
+                        <li>سجل المدفوعات</li>
+                        <li>سجل ساعات العمل (إن وجد)</li>
                     </ul>
                 </div>
                 

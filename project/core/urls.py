@@ -56,15 +56,26 @@ urlpatterns = [
     path('reports/students/',students_report, name='students_report'),
     path('reports/students/print/', print_students_report, name='students_report_print'),
 
-    path('hr/dashboard/', dashboard_hr, name='hr_dashboard'),
+
+    path('hr/dashboard/', hr_dashboard, name='hr_dashboard'),
+    
     path('hr/employees/', employee_list, name='employee_list'),
     path('hr/employees/create/', employee_create, name='employee_create'),
     path('hr/employees/<int:pk>/edit/', employee_edit, name='employee_edit'),
-    path('hr/attendance/', attendance_list, name='attendance_list'),
-    path('hr/attendance/create/', attendance_create, name='attendance_create'),
-    path('hr/payroll/', payroll_list, name='payroll_list'),
-    path('hr/payroll/create/', payroll_create, name='payroll_create'),
-    path('hr/payroll/<int:payroll_id>/pay/', payroll_payment_create, name='payroll_payment_create'),
     path('hr/employees/<int:pk>/delete/', employee_delete, name='employee_delete'),
-    path('hr/payroll/<int:pk>/delete/', payroll_delete, name='payroll_delete'),
+    
+    path('hr/absences/', absence_list, name='absence_list'),
+    path('hr/absences/create/', absence_create, name='absence_create'),
+    path('hr/absences/<int:pk>/delete/', absence_delete, name='absence_delete'),
+    
+    path('hr/monthly/<int:employee_id>/payment/', monthly_salary_payment, name='monthly_salary_payment'),
+    path('hr/monthly/<int:employee_id>/statement/', monthly_salary_statement, name='monthly_salary_statement'),
+    
+    path('hr/hourly-work/', hourly_work_list, name='hourly_work_list'),
+    path('hr/hourly-work/create/', hourly_work_create, name='hourly_work_create'),
+    path('hr/hourly-work/<int:pk>/delete/', hourly_work_delete, name='hourly_work_delete'),
+    
+    path('hr/hourly/<int:employee_id>/payment/', hourly_payment_create, name='hourly_payment_create'),
+    path('hr/hourly/<int:employee_id>/statement/', hourly_statement, name='hourly_statement'),
+
 ]

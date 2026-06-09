@@ -10,53 +10,47 @@
         <i class="bi bi-person-badge me-2"></i>{{ title }}
     </div>
     <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post">
             {% csrf_token %}
             
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">الاسم الكامل *</label>
-                    {{ form.full_name }}
-                    {% if form.full_name.errors %}
-                        <div class="text-danger small">{{ form.full_name.errors }}</div>
-                    {% endif %}
+                    <input type="text" name="full_name" class="form-control" value="{{ employee.full_name|default:'' }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">الوظيفة *</label>
-                    {{ form.position }}
+                    <input type="text" name="position" class="form-control" value="{{ employee.position|default:'' }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">رقم الهاتف</label>
-                    {{ form.phone }}
+                    <input type="text" name="phone" class="form-control" value="{{ employee.phone|default:'' }}">
                 </div>
-               
                 <div class="col-md-6">
                     <label class="form-label">نظام الدفع *</label>
-                    {{ form.payment_type }}
+                    <select name="payment_type" id="payment_type" class="form-select" required>
+                        <option value="monthly" {% if employee.payment_type == 'monthly' %}selected{% endif %}>شهري</option>
+                        <option value="hourly" {% if employee.payment_type == 'hourly' %}selected{% endif %}>بالساعة</option>
+                    </select>
                 </div>
+                <div class="col-md-6" id="monthly_fields" {% if employee.payment_type == 'hourly' %}style="display:none;"{% endif %}>
+                    <label class="form-label">الراتب الشهري</label>
+                    <input type="number" name="monthly_salary" class="form-control" value="{{ employee.monthly_salary|default:0 }}">
+                </div>
+                <div class="col-md-6" id="hourly_fields" {% if employee.payment_type == 'monthly' %}style="display:none;"{% endif %}>
+                    <label class="form-label">أجر الساعة</label>
+                    <input type="number" name="hourly_rate" class="form-control" value="{{ employee.hourly_rate|default:0 }}">
+                </div>
+                {% if employee %}
                 <div class="col-md-6">
                     <label class="form-label">الحالة</label>
-                    {{ form.status }}
+                    <select name="status" class="form-select">
+                        <option value="active" {% if employee.status == 'active' %}selected{% endif %}>نشط</option>
+                        <option value="inactive" {% if employee.status == 'inactive' %}selected{% endif %}>غير نشط</option>
+                        <option value="on_leave" {% if employee.status == 'on_leave' %}selected{% endif %}>في إجازة</option>
+                    </select>
                 </div>
-                <div class="col-md-6" id="monthly_fields">
-                    <label class="form-label">الراتب الشهري</label>
-                    {{ form.monthly_salary }}
-                    <small class="text-muted">للموظفين بنظام شهري فقط</small>
-                </div>
-                <div class="col-md-6" id="expected_days_field">
-                    <label class="form-label">أيام العمل المتوقعة شهرياً</label>
-                    {{ form.expected_work_days }}
-                </div>
-                <div class="col-md-6" id="hourly_fields" style="display:none;">
-                    <label class="form-label">أجر الساعة</label>
-                    {{ form.hourly_rate }}
-                    <small class="text-muted">للموظفين بنظام أسبوعي/يومي/بالساعة</small>
-                </div>
-                <div class="col-md-6" id="weekly_hours_field" style="display:none;">
-                    <label class="form-label">الساعات المتوقعة أسبوعياً</label>
-                    {{ form.expected_weekly_hours }}
-                </div>
-                
+                {% endif %}
             </div>
             
             <div class="mt-4 d-flex gap-2">
@@ -72,38 +66,16 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const paymentType = document.getElementById('id_payment_type');
+document.getElementById('payment_type').addEventListener('change', function() {
     const monthlyFields = document.getElementById('monthly_fields');
     const hourlyFields = document.getElementById('hourly_fields');
-    const weeklyHoursField = document.getElementById('weekly_hours_field');
-    const expectedDaysField = document.getElementById('expected_days_field');
-    
-    function toggleFields() {
-        const value = paymentType.value;
+    if (this.value === 'monthly') {
         monthlyFields.style.display = 'block';
         hourlyFields.style.display = 'none';
-        weeklyHoursField.style.display = 'none';
-        expectedDaysField.style.display = 'block';
-        
-        if (value === 'monthly') {
-            monthlyFields.style.display = 'block';
-            hourlyFields.style.display = 'none';
-        } else if (value === 'weekly') {
-            monthlyFields.style.display = 'none';
-            hourlyFields.style.display = 'block';
-            weeklyHoursField.style.display = 'block';
-            expectedDaysField.style.display = 'none';
-        } else if (value === 'daily' || value === 'hourly') {
-            monthlyFields.style.display = 'none';
-            hourlyFields.style.display = 'block';
-            weeklyHoursField.style.display = 'none';
-            expectedDaysField.style.display = 'none';
-        }
+    } else {
+        monthlyFields.style.display = 'none';
+        hourlyFields.style.display = 'block';
     }
-    
-    paymentType.addEventListener('change', toggleFields);
-    toggleFields();
 });
 </script>
 {% endblock %}

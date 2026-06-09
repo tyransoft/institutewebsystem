@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}حذف ساعات عمل{% endblock %}
+{% block mobile_title %}حذف ساعات{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                تأكيد حذف ساعات عمل
+            </div>
+            <div class="card-body text-center">
+                <p>هل أنت متأكد من حذف سجل ساعات العمل التالي؟</p>
+                <div class="alert alert-warning">
+                    <strong>{{ work_record.employee.full_name }}</strong><br>
+                    التاريخ: {{ work_record.work_date|date:"Y-m-d" }}<br>
+                    الساعات: {{ work_record.hours }} ساعة<br>
+                    الإجمالي: {{ work_record.total_amount|floatformat:0 }} ل.س
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">نعم، احذف</button>
+                    <a href="{% url 'hourly_work_list' %}" class="btn btn-secondary">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

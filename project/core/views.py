@@ -1274,205 +1274,254 @@ def dashboard(request):
 
 
 
-
 @login_required
 def employee_list(request):
     employees = Employee.objects.all()
-    return render(request, 'employee_list.html', {
-        'employees': employees,
-        'page_title': 'إدارة الموظفين',
-        'mobile_title': 'الموظفين'
-    })
+    return render(request, 'employee_list.html', {'employees': employees})
 
 @login_required
 def employee_create(request):
     if request.method == 'POST':
-        form = EmployeeForm(request.POST, request.FILES)
-        if form.is_valid():
-            employee = form.save()
-            messages.success(request, f'تم إضافة الموظف {employee.full_name} بنجاح')
-            return redirect('employee_list')
-    else:
-        form = EmployeeForm()
-    return render(request, 'employee_form.html', {
-        'form': form,
-        'title': 'إضافة موظف جديد',
-        'page_title': 'إضافة موظف جديد',
-        'mobile_title': 'إضافة موظف'
-    })
+        full_name = request.POST.get('full_name')
+        position = request.POST.get('position')
+        phone = request.POST.get('phone')
+        payment_type = request.POST.get('payment_type')
+        monthly_salary = request.POST.get('monthly_salary', 0)
+        hourly_rate = request.POST.get('hourly_rate', 0)
+        
+        employee = Employee(
+            full_name=full_name,
+            position=position,
+            phone=phone,
+            payment_type=payment_type,
+            monthly_salary=monthly_salary,
+            hourly_rate=hourly_rate
+        )
+        employee.save()
+        messages.success(request, f'تم إضافة الموظف {full_name} بنجاح')
+        return redirect('employee_list')
+    
+    return render(request, 'employee_form.html', {'title': 'إضافة موظف جديد'})
 
 @login_required
 def employee_edit(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
-        form = EmployeeForm(request.POST, request.FILES, instance=employee)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'تم تعديل بيانات الموظف {employee.full_name} بنجاح')
-            return redirect('employee_list')
-    else:
-        form = EmployeeForm(instance=employee)
-    return render(request, 'employee_form.html', {
-        'form': form,
-        'employee': employee,
-        'title': 'تعديل بيانات موظف',
-        'page_title': f'تعديل بيانات {employee.full_name}',
-        'mobile_title': 'تعديل موظف'
-    })
-
-@login_required
-def attendance_list(request):
-    attendances = Attendance.objects.all().select_related('employee')
-    return render(request, 'attendance_list.html', {
-        'attendances': attendances,
-        'page_title': 'سجل الحضور والغياب',
-        'mobile_title': 'الحضور والغياب'
-    })
-
-@login_required
-def attendance_create(request):
-    if request.method == 'POST':
-        form = AttendanceForm(request.POST)
-        if form.is_valid():
-            attendance = form.save()
-            messages.success(request, f'تم تسجيل حضور {attendance.employee.full_name} بتاريخ {attendance.date}')
-            return redirect('attendance_list')
-    else:
-        form = AttendanceForm()
-    return render(request, 'attendance_form.html', {
-        'form': form,
-        'title': 'تسجيل حضور/غياب',
-        'page_title': 'تسجيل حضور وغياب',
-        'mobile_title': 'تسجيل حضور'
-    })
-
-@login_required
-def payroll_list(request):
-    payrolls = Payroll.objects.all().select_related('employee')
-    return render(request, 'payroll_list.html', {
-        'payrolls': payrolls,
-        'page_title': 'كشوف الرواتب',
-        'mobile_title': 'الرواتب'
-    })
-
-@login_required
-def payroll_create(request):
-    if request.method == 'POST':
-        form = PayrollForm(request.POST)
-        if form.is_valid():
-            payroll = form.save()
-            messages.success(request, f'تم إنشاء كشف الراتب للموظف {payroll.employee.full_name}')
-            return redirect('payroll_list')
-    else:
-        form = PayrollForm()
-    return render(request, 'payroll_form.html', {
-        'form': form,
-        'title': 'إنشاء كشف راتب جديد',
-        'page_title': 'إنشاء كشف راتب',
-        'mobile_title': 'كشف راتب جديد'
-    })
-
-@login_required
-def payroll_payment_create(request, payroll_id):
-    payroll = get_object_or_404(Payroll, pk=payroll_id)
-    if request.method == 'POST':
-        form = PayrollPaymentForm(request.POST)
-        if form.is_valid():
-            payment = form.save(commit=False)
-            payment.created_by = request.user
-            payment.save()
-            messages.success(request, f'تم تسديد راتب {payment.employee.full_name} بقيمة {payment.amount}')
-            return redirect('payroll_list')
-    else:
-        form = PayrollPaymentForm(initial={
-            'payroll': payroll,
-            'employee': payroll.employee,
-            'amount': payroll.net_salary,
-            'payment_date': date.today()
-        })
-    return render(request, 'payroll_payment_form.html', {
-        'form': form,
-        'payroll': payroll,
-        'title': 'تسديد راتب',
-        'page_title': f'تسديد راتب {payroll.employee.full_name}',
-        'mobile_title': 'تسديد راتب'
-    })
-
-@login_required
-def dashboard_hr(request):
-    total_employees = Employee.objects.count()
-    active_employees = Employee.objects.filter(status='active').count()
-    today = date.today()
-    today_attendances = Attendance.objects.filter(date=today).count()
-    pending_payrolls = Payroll.objects.filter(status='pending').count()
+        employee.full_name = request.POST.get('full_name')
+        employee.position = request.POST.get('position')
+        employee.phone = request.POST.get('phone')
+        employee.payment_type = request.POST.get('payment_type')
+        employee.monthly_salary = request.POST.get('monthly_salary', 0)
+        employee.hourly_rate = request.POST.get('hourly_rate', 0)
+        employee.status = request.POST.get('status')
+        employee.save()
+        messages.success(request, f'تم تعديل بيانات {employee.full_name}')
+        return redirect('employee_list')
     
-    this_week_start = today - timedelta(days=today.weekday() + 1)
-    weekly_attendances = Attendance.objects.filter(date__gte=this_week_start).values('status').annotate(count=Count('id'))
-    
-    employees_by_type = Employee.objects.values('payment_type').annotate(count=Count('id'))
-    
-    context = {
-        'total_employees': total_employees,
-        'active_employees': active_employees,
-        'today_attendances': today_attendances,
-        'pending_payrolls': pending_payrolls,
-        'weekly_attendances': weekly_attendances,
-        'employees_by_type': employees_by_type,
-        'page_title': 'لوحة تحكم الموارد البشرية',
-        'mobile_title': 'HR Dashboard'
-    }
-    return render(request, 'hr_dashboard.html', context)
-
+    return render(request, 'employee_form.html', {'employee': employee, 'title': 'تعديل بيانات موظف'})
 
 @login_required
 def employee_delete(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
-    
     if request.method == 'POST':
-        employee_name = employee.full_name
-        
-        with transaction.atomic():
-            payrolls = Payroll.objects.filter(employee=employee)
-            for payroll in payrolls:
-                PayrollPayment.objects.filter(payroll=payroll).delete()
-            payrolls.delete()
-            
-            Attendance.objects.filter(employee=employee).delete()
-            
-            employee.delete()
-        
-        messages.success(request, f'تم حذف الموظف "{employee_name}" وجميع بياناته بنجاح')
+        employee.delete()
+        messages.success(request, 'تم حذف الموظف بنجاح')
         return redirect('employee_list')
-    
-    payroll_count = Payroll.objects.filter(employee=employee).count()
-    attendance_count = Attendance.objects.filter(employee=employee).count()
-    
-    return render(request, 'employee_confirm_delete.html', {
-        'employee': employee,
-        'payroll_count': payroll_count,
-        'attendance_count': attendance_count,
-        'page_title': 'تأكيد حذف موظف',
-        'mobile_title': 'حذف موظف'
-    })
-
+    return render(request, 'employee_confirm_delete.html', {'employee': employee})
 
 @login_required
-def payroll_delete(request, pk):
-    payroll = get_object_or_404(Payroll, pk=pk)
+def absence_create(request):
+    if request.method == 'POST':
+        employee_id = request.POST.get('employee')
+        absence_date = request.POST.get('absence_date')
+        deduction_amount = request.POST.get('deduction_amount')
+        reason = request.POST.get('reason')
+        
+        employee = get_object_or_404(Employee, pk=employee_id)
+        
+        AbsenceRecord.objects.create(
+            employee=employee,
+            absence_date=absence_date,
+            deduction_amount=deduction_amount,
+            reason=reason
+        )
+        messages.success(request, f'تم تسجيل غياب {employee.full_name} بتاريخ {absence_date}')
+        return redirect('absence_list')
+    
+    employees = Employee.objects.filter(payment_type='monthly', status='active')
+    return render(request, 'absence_form.html', {'employees': employees, 'title': 'تسجيل غياب'})
+
+@login_required
+def absence_list(request):
+    absences = AbsenceRecord.objects.all().select_related('employee')
+    return render(request, 'absence_list.html', {'absences': absences})
+
+@login_required
+def absence_delete(request, pk):
+    absence = get_object_or_404(AbsenceRecord, pk=pk)
+    if request.method == 'POST':
+        absence.delete()
+        messages.success(request, 'تم حذف تسجيل الغياب')
+        return redirect('absence_list')
+    return render(request, 'absence_confirm_delete.html', {'absence': absence})
+
+@login_required
+def monthly_salary_payment(request, employee_id):
+    employee = get_object_or_404(Employee, pk=employee_id, payment_type='monthly')
     
     if request.method == 'POST':
-        employee_name = payroll.employee.full_name
-        period = f"{payroll.period_start} إلى {payroll.period_end}"
+        amount = request.POST.get('amount')
+        payment_date = request.POST.get('payment_date')
+        payment_method = request.POST.get('payment_method')
+        notes = request.POST.get('notes')
         
-        with transaction.atomic():
-            PayrollPayment.objects.filter(payroll=payroll).delete()
-            payroll.delete()
-        
-        messages.success(request, f'تم حذف كشف الراتب للموظف "{employee_name}" للفترة {period}')
-        return redirect('payroll_list')
+        payment = MonthlySalaryPayment(
+            employee=employee,
+            amount=amount,
+            payment_date=payment_date,
+            payment_method=payment_method,
+            notes=notes,
+            created_by=request.user
+        )
+        payment.save()
+        messages.success(request, f'تم تسديد {amount} ل.س للموظف {employee.full_name}')
+        return redirect('employee_list')
     
-    return render(request, 'payroll_confirm_delete.html', {
-        'payroll': payroll,
-        'page_title': 'تأكيد حذف كشف راتب',
-        'mobile_title': 'حذف كشف راتب'
+    return render(request, 'monthly_payment_form.html', {'employee': employee})
+
+@login_required
+def monthly_salary_statement(request, employee_id):
+    employee = get_object_or_404(Employee, pk=employee_id, payment_type='monthly')
+    absences = AbsenceRecord.objects.filter(employee=employee)
+    payments = MonthlySalaryPayment.objects.filter(employee=employee)
+    
+    total_deductions = absences.aggregate(total=Sum('deduction_amount'))['total'] or 0
+    total_paid = payments.aggregate(total=Sum('amount'))['total'] or 0
+    net_salary = employee.monthly_salary - total_deductions
+    remaining = net_salary - total_paid
+    
+    context = {
+        'employee': employee,
+        'absences': absences,
+        'payments': payments,
+        'total_deductions': total_deductions,
+        'total_paid': total_paid,
+        'net_salary': net_salary,
+        'remaining': remaining,
+    }
+    return render(request, 'monthly_statement.html', context)
+
+@login_required
+def hourly_work_create(request):
+    if request.method == 'POST':
+        employee_id = request.POST.get('employee')
+        work_date = request.POST.get('work_date')
+        hours = request.POST.get('hours')
+        notes = request.POST.get('notes')
+        
+        employee = get_object_or_404(Employee, pk=employee_id, payment_type='hourly')
+        
+        work_record = HourlyWorkRecord(
+            employee=employee,
+            work_date=work_date,
+            hours=hours,
+            notes=notes
+        )
+        work_record.save()
+        messages.success(request, f'تم تسجيل {hours} ساعات للموظف {employee.full_name}')
+        return redirect('hourly_work_list')
+    
+    employees = Employee.objects.filter(payment_type='hourly', status='active')
+    return render(request, 'hourly_work_form.html', {'employees': employees, 'title': 'تسجيل ساعات عمل'})
+
+@login_required
+def hourly_work_list(request):
+    work_records = HourlyWorkRecord.objects.all().select_related('employee')
+    return render(request, 'hourly_work_list.html', {'work_records': work_records})
+
+@login_required
+def hourly_work_delete(request, pk):
+    work_record = get_object_or_404(HourlyWorkRecord, pk=pk)
+    if request.method == 'POST':
+        work_record.delete()
+        messages.success(request, 'تم حذف سجل ساعات العمل')
+        return redirect('hourly_work_list')
+    return render(request, 'hourly_work_confirm_delete.html', {'work_record': work_record})
+
+@login_required
+def hourly_payment_create(request, employee_id):
+    employee = get_object_or_404(Employee, pk=employee_id, payment_type='hourly')
+    
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        payment_date = request.POST.get('payment_date')
+        payment_method = request.POST.get('payment_method')
+        notes = request.POST.get('notes')
+        
+        payment = HourlyPayment(
+            employee=employee,
+            amount=amount,
+            payment_date=payment_date,
+            payment_method=payment_method,
+            notes=notes,
+            created_by=request.user
+        )
+        payment.save()
+        messages.success(request, f'تم تسديد {amount} ل.س للموظف {employee.full_name}')
+        return redirect('employee_list')
+    
+    unpaid_total = HourlyWorkRecord.objects.filter(employee=employee, is_paid=False).aggregate(total=Sum('total_amount'))['total'] or 0
+    
+    return render(request, 'hourly_payment_form.html', {
+        'employee': employee,
+        'unpaid_total': unpaid_total
     })
+
+@login_required
+def hourly_statement(request, employee_id):
+    employee = get_object_or_404(Employee, pk=employee_id, payment_type='hourly')
+    work_records = HourlyWorkRecord.objects.filter(employee=employee)
+    payments = HourlyPayment.objects.filter(employee=employee)
+    
+    total_hours = work_records.aggregate(total=Sum('hours'))['total'] or 0
+    total_earned = work_records.aggregate(total=Sum('total_amount'))['total'] or 0
+    total_paid = payments.aggregate(total=Sum('amount'))['total'] or 0
+    remaining = total_earned - total_paid
+    
+    context = {
+        'employee': employee,
+        'work_records': work_records,
+        'payments': payments,
+        'total_hours': total_hours,
+        'total_earned': total_earned,
+        'total_paid': total_paid,
+        'remaining': remaining,
+    }
+    return render(request, 'hourly_statement.html', context)
+
+@login_required
+def hr_dashboard(request):
+    monthly_employees = Employee.objects.filter(payment_type='monthly', status='active')
+    hourly_employees = Employee.objects.filter(payment_type='hourly', status='active')
+    
+    monthly_total_salary = sum(emp.monthly_salary for emp in monthly_employees)
+    monthly_total_deductions = sum(emp.total_absence_deductions for emp in monthly_employees)
+    monthly_total_paid = sum(emp.total_monthly_paid for emp in monthly_employees)
+    monthly_net = monthly_total_salary - monthly_total_deductions
+    monthly_remaining = monthly_net - monthly_total_paid
+    
+    hourly_total_earned = sum(emp.total_hourly_earned for emp in hourly_employees)
+    hourly_total_paid = sum(emp.total_hourly_paid for emp in hourly_employees)
+    hourly_remaining = hourly_total_earned - hourly_total_paid
+    
+    context = {
+        'monthly_count': monthly_employees.count(),
+        'hourly_count': hourly_employees.count(),
+        'monthly_total_salary': monthly_total_salary,
+        'monthly_total_deductions': monthly_total_deductions,
+        'monthly_net': monthly_net,
+        'monthly_remaining': monthly_remaining,
+        'hourly_total_earned': hourly_total_earned,
+        'hourly_remaining': hourly_remaining,
+    }
+    return render(request, 'hr_dashboard.html', context)

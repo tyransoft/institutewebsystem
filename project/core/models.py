@@ -369,14 +369,12 @@ class Expense(models.Model):
     def __str__(self):
         return f"{self.title} - {self.amount}"
 
-
+# models.py - فقط نماذج الموارد البشرية المعدلة مع الاحتفاظ بجدول Employee كما هو
 
 class Employee(models.Model):
     PAYMENT_TYPE_CHOICES = [
         ('monthly', 'شهري'),
-        ('weekly', 'أسبوعي'),
-        ('daily', 'يومي (نهاية اليوم)'),
-        ('hourly', 'بالمساحة (نهاية اليوم)'),
+        ('hourly','بالساعة'),
     ]
     
     STATUS_CHOICES = [
@@ -392,10 +390,10 @@ class Employee(models.Model):
     payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES, verbose_name='نظام الدفع')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='الحالة')
     
-    monthly_salary = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='الراتب الشهري (للموظف الشهري)')
+    monthly_salary = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='الراتب الشهري')
     expected_work_days = models.IntegerField(default=26, verbose_name='أيام العمل المتوقعة شهرياً')
     
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name='أجر الساعة (للموظف بالساعة)')
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name='أجر الساعة')
     expected_weekly_hours = models.DecimalField(max_digits=10, decimal_places=2, default=40, verbose_name='الساعات المتوقعة أسبوعياً')
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -408,190 +406,78 @@ class Employee(models.Model):
     def __str__(self):
         return f"{self.full_name} - {self.position}"
     
-
- 
-    
     def get_payment_type_display_ar(self):
         return dict(self.PAYMENT_TYPE_CHOICES).get(self.payment_type, self.payment_type)
+    
+    @property
+    def total_absence_deductions(self):
+        return AbsenceRecord.objects.filter(employee=self).aggregate(total=models.Sum('deduction_amount'))['total'] or 0
+    
+    @property
+    def total_monthly_paid(self):
+        return MonthlySalaryPayment.objects.filter(employee=self).aggregate(total=models.Sum('amount'))['total'] or 0
+    
+    @property
+    def net_monthly_salary(self):
+        return self.monthly_salary - self.total_absence_deductions
+    
+    @property
+    def monthly_remaining(self):
+        return self.net_monthly_salary - self.total_monthly_paid
+    
+    @property
+    def total_hours_worked(self):
+        return HourlyWorkRecord.objects.filter(employee=self).aggregate(total=models.Sum('hours'))['total'] or 0
+    
+    @property
+    def total_hourly_earned(self):
+        return HourlyWorkRecord.objects.filter(employee=self).aggregate(total=models.Sum('total_amount'))['total'] or 0
+    
+    @property
+    def total_hourly_paid(self):
+        return HourlyPayment.objects.filter(employee=self).aggregate(total=models.Sum('amount'))['total'] or 0
+    
+    @property
+    def hourly_remaining(self):
+        return self.total_hourly_earned - self.total_hourly_paid
 
 
-class Attendance(models.Model):
-    STATUS_CHOICES = [
-        ('present', 'حاضر'),
-        ('absent', 'غائب'),
-        ('late', 'متأخر'),
-        ('excused', 'بعذر'),
-    ]
-    
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendances', verbose_name='الموظف')
-    date = models.DateField(verbose_name='التاريخ')
-    
-    check_in_time = models.TimeField(blank=True, null=True, verbose_name='وقت الحضور')
-    check_out_time = models.TimeField(blank=True, null=True, verbose_name='وقت الانصراف')
-    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present', verbose_name='الحالة')
-    hours_worked = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='عدد ساعات العمل')
-    
-    deduction_amount = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='مبلغ الخصم')
-    notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
-    
+class AbsenceRecord(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='absences', verbose_name='الموظف')
+    absence_date = models.DateField(verbose_name='تاريخ الغياب')
+    deduction_amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='قيمة الخصم')
+    reason = models.CharField(max_length=200, blank=True, null=True, verbose_name='سبب الغياب')
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        verbose_name = 'حضور'
-        verbose_name_plural = 'الحضور والغياب'
-        ordering = ['-date']
-        unique_together = ['employee', 'date']
+        verbose_name = 'تسجيل غياب'
+        verbose_name_plural = 'سجل الغيابات'
+        ordering = ['-absence_date']
+        unique_together = ['employee', 'absence_date']
     
     def __str__(self):
-        return f"{self.employee.full_name} - {self.date} - {self.get_status_display()}"
-    
-    def calculate_hours_worked(self):
-        if self.check_in_time and self.check_out_time:
-            from datetime import datetime as dt
-            check_in = dt.combine(self.date, self.check_in_time)
-            check_out = dt.combine(self.date, self.check_out_time)
-            diff = check_out - check_in
-            hours = diff.total_seconds() / 3600
-            return round(hours, 2)
-        return 0
-    
-    def calculate_deduction(self):
-        deduction = 0
-        if self.status == 'absent':
-            if self.employee.payment_type == 'monthly':
-                daily_rate = self.employee.monthly_salary / self.employee.expected_work_days
-                deduction = daily_rate
-            elif self.employee.payment_type == 'daily':
-                deduction = self.employee.hourly_rate * 8
-            elif self.employee.payment_type == 'hourly':
-                deduction = self.employee.hourly_rate * self.employee.expected_weekly_hours / 5
-        elif self.status == 'late' and self.employee.payment_type == 'hourly':
-            if self.check_in_time:
-                expected_hour = 9
-                if self.check_in_time.hour > expected_hour:
-                    late_hours = self.check_in_time.hour - expected_hour
-                    deduction = late_hours * self.employee.hourly_rate
-        return round(deduction)
-    
-    def save(self, *args, **kwargs):
-        if self.check_in_time and self.check_out_time:
-            self.hours_worked = self.calculate_hours_worked()
-        self.deduction_amount = self.calculate_deduction()
-        super().save(*args, **kwargs)
+        return f"{self.employee.full_name} - {self.absence_date} - خصم {self.deduction_amount}"
 
 
-class Payroll(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'معلق'),
-        ('paid', 'مدفوع'),
-        ('cancelled', 'ملغي'),
-    ]
-    
-    PAYROLL_TYPE_CHOICES = [
-        ('monthly', 'شهري'),
-        ('weekly', 'أسبوعي'),
-        ('daily', 'يومي'),
-    ]
-    
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payrolls', verbose_name='الموظف')
-    payroll_type = models.CharField(max_length=20, choices=PAYROLL_TYPE_CHOICES, verbose_name='نوع المرتب')
-    
-    period_start = models.DateField(verbose_name='بداية الفترة')
-    period_end = models.DateField(verbose_name='نهاية الفترة')
-    
-    base_salary = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='المرتب الأساسي')
-    total_hours = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='إجمالي الساعات')
-    total_deductions = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='إجمالي الخصومات')
-    
-    net_salary = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name='صافي المرتب')
-    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='الحالة')
-    payment_date = models.DateField(blank=True, null=True, verbose_name='تاريخ الدفع')
-    
-    notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تم بواسطة')
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'كشف راتب'
-        verbose_name_plural = 'كشوف الرواتب'
-        ordering = ['-period_end']
-    
-    def __str__(self):
-        return f"{self.employee.full_name} - {self.period_start} إلى {self.period_end}"
-    
-    def calculate_payroll(self):
-        absences = Attendance.objects.filter(
-            employee=self.employee,
-            date__range=[self.period_start, self.period_end],
-            status='absent'
-        ).count()
-        
-        late_days = Attendance.objects.filter(
-            employee=self.employee,
-            date__range=[self.period_start, self.period_end],
-            status='late'
-        ).count()
-        
-        total_deduction = 0
-        
-        if self.employee.payment_type == 'monthly':
-            daily_rate = self.employee.monthly_salary / self.employee.expected_work_days
-            total_deduction = absences * daily_rate
-            self.base_salary = self.employee.monthly_salary
-        
-        elif self.employee.payment_type == 'weekly':
-            attendances = Attendance.objects.filter(
-                employee=self.employee,
-                date__range=[self.period_start, self.period_end],
-                status='present'
-            )
-            total_hours = sum([a.hours_worked for a in attendances])
-            self.total_hours = total_hours
-            self.base_salary = total_hours * self.employee.hourly_rate
-            total_deduction = attendances.filter(status='absent').count() * (self.employee.hourly_rate * 8)
-        
-        elif self.employee.payment_type in ['daily', 'hourly']:
-            attendances = Attendance.objects.filter(
-                employee=self.employee,
-                date__range=[self.period_start, self.period_end]
-            )
-            self.total_hours = sum([a.hours_worked for a in attendances if a.status == 'present'])
-            self.base_salary = self.total_hours * self.employee.hourly_rate
-            total_deduction = sum([a.deduction_amount for a in attendances])
-        
-        self.total_deductions = round(total_deduction)
-        self.net_salary = round(self.base_salary - self.total_deductions)
-        return self.net_salary
-    
-    def save(self, *args, **kwargs):
-        self.calculate_payroll()
-        super().save(*args, **kwargs)
-
-
-class PayrollPayment(models.Model):
+class MonthlySalaryPayment(models.Model):
     METHOD_CHOICES = [
         ('cash', 'نقداً'),
         ('bank_transfer', 'تحويل بنكي'),
         ('check', 'شيك'),
     ]
     
-    payroll = models.ForeignKey(Payroll, on_delete=models.CASCADE, related_name='payments', verbose_name='كشف الراتب')
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name='الموظف')
-    
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='monthly_payments', verbose_name='الموظف')
     amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='المبلغ المدفوع')
     payment_date = models.DateField(verbose_name='تاريخ الدفع')
     payment_method = models.CharField(max_length=20, choices=METHOD_CHOICES, default='cash', verbose_name='طريقة الدفع')
     receipt_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الإيصال')
-    
     notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تم بواسطة')
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        verbose_name = 'تسديد راتب'
-        verbose_name_plural = 'تسديد الرواتب'
+        verbose_name = 'دفعة راتب شهري'
+        verbose_name_plural = 'مدفوعات الرواتب الشهرية'
         ordering = ['-payment_date']
     
     def __str__(self):
@@ -599,7 +485,7 @@ class PayrollPayment(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.receipt_number:
-            last_payment = PayrollPayment.objects.order_by('-id').first()
+            last_payment = MonthlySalaryPayment.objects.order_by('-id').first()
             if last_payment and last_payment.receipt_number:
                 try:
                     last_num = int(last_payment.receipt_number.split('-')[-1])
@@ -609,12 +495,87 @@ class PayrollPayment(models.Model):
             else:
                 new_num = 1
             date_str = date.today().strftime('%Y%m%d')
-            self.receipt_number = f"SLR-{date_str}-{new_num:04d}"
-        
+            self.receipt_number = f"MSL-{date_str}-{new_num:04d}"
         super().save(*args, **kwargs)
-        self.payroll.status = 'paid'
-        self.payroll.payment_date = self.payment_date
-        self.payroll.save(update_fields=['status', 'payment_date'])
+    
+    def get_method_display_ar(self):
+        return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)
+
+
+class HourlyWorkRecord(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='work_records', verbose_name='الموظف')
+    work_date = models.DateField(verbose_name='تاريخ العمل')
+    hours = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='عدد ساعات العمل')
+    hourly_rate_at_time = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='أجر الساعة عند التسجيل')
+    total_amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='الإجمالي')
+    is_paid = models.BooleanField(default=False, verbose_name='تم التسديد؟')
+    notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'سجل ساعات عمل'
+        verbose_name_plural = 'سجلات ساعات العمل'
+        ordering = ['-work_date']
+    
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.work_date} - {self.hours} ساعات"
+    
+    def save(self, *args, **kwargs):
+        self.hourly_rate_at_time = self.employee.hourly_rate
+        self.total_amount = self.hours * self.hourly_rate_at_time
+        super().save(*args, **kwargs)
+
+
+class HourlyPayment(models.Model):
+    METHOD_CHOICES = [
+        ('cash', 'نقداً'),
+        ('bank_transfer', 'تحويل بنكي'),
+        ('check', 'شيك'),
+    ]
+    
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='hourly_payments', verbose_name='الموظف')
+    amount = models.DecimalField(max_digits=15, decimal_places=0, verbose_name='المبلغ المدفوع')
+    payment_date = models.DateField(verbose_name='تاريخ الدفع')
+    payment_method = models.CharField(max_length=20, choices=METHOD_CHOICES, default='cash', verbose_name='طريقة الدفع')
+    receipt_number = models.CharField(max_length=50, unique=True, verbose_name='رقم الإيصال')
+    notes = models.TextField(blank=True, null=True, verbose_name='ملاحظات')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تم بواسطة')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'دفعة موظف بالساعة'
+        verbose_name_plural = 'مدفوعات الموظفين بالساعة'
+        ordering = ['-payment_date']
+    
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.amount} - {self.receipt_number}"
+    
+    def save(self, *args, **kwargs):
+        if not self.receipt_number:
+            last_payment = HourlyPayment.objects.order_by('-id').first()
+            if last_payment and last_payment.receipt_number:
+                try:
+                    last_num = int(last_payment.receipt_number.split('-')[-1])
+                    new_num = last_num + 1
+                except:
+                    new_num = 1
+            else:
+                new_num = 1
+            date_str = date.today().strftime('%Y%m%d')
+            self.receipt_number = f"HPL-{date_str}-{new_num:04d}"
+        super().save(*args, **kwargs)
+        
+        unpaid_records = HourlyWorkRecord.objects.filter(employee=self.employee, is_paid=False).order_by('work_date')
+        remaining_to_pay = self.amount
+        for record in unpaid_records:
+            if remaining_to_pay <= 0:
+                break
+            if record.total_amount <= remaining_to_pay:
+                record.is_paid = True
+                remaining_to_pay -= record.total_amount
+            else:
+                record.is_paid = False
+            record.save()
     
     def get_method_display_ar(self):
         return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)

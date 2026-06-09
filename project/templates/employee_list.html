@@ -1,3 +1,4 @@
+<!-- templates/hr/employee_list.html -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -16,31 +17,77 @@
     <table class="table table-hover mb-0">
         <thead>
             <tr>
-                <th>#</th><th>الاسم</th><th>الوظيفة</th><th>نظام الدفع</th><th>الحالة</th><th>الإجراءات</th>
+                <th>#</th>
+                <th>الاسم</th>
+                <th>الوظيفة</th>
+                <th>نظام الدفع</th>
+                <th>الراتب/أجر الساعة</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
             </tr>
         </thead>
         <tbody>
             {% for emp in employees %}
             <tr>
-                <td>{{ emp.employee_number }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ emp.full_name }}</td>
                 <td>{{ emp.position }}</td>
-                <td>{{ emp.get_payment_type_display }}</td>
                 <td>
-                    <span class="badge {% if emp.status == 'active' %}bg-success{% elif emp.status == 'inactive' %}bg-secondary{% else %}bg-warning{% endif %}">
-                        {{ emp.get_status_display }}
-                    </span>
+                    {% if emp.payment_type == 'monthly' %}
+                        <span class="badge bg-primary">شهري</span>
+                    {% else %}
+                        <span class="badge bg-info">بالساعة</span>
+                    {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'employee_edit' emp.pk %}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <a href="{% url 'employee_delete' emp.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
-
+                    {% if emp.payment_type == 'monthly' %}
+                        {{ emp.monthly_salary|floatformat:0 }} ل.س
+                    {% else %}
+                        {{ emp.hourly_rate|floatformat:0 }} ل.س/ساعة
+                    {% endif %}
+                </td>
+                <td>
+                    {% if emp.status == 'active' %}
+                        <span class="badge bg-success">نشط</span>
+                    {% elif emp.status == 'inactive' %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                    {% else %}
+                        <span class="badge bg-warning">في إجازة</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'employee_edit' emp.pk %}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if emp.payment_type == 'monthly' %}
+                            <a href="{% url 'monthly_salary_statement' emp.pk %}" class="btn btn-outline-info">
+                                <i class="bi bi-receipt"></i>
+                            </a>
+                            <a href="{% url 'monthly_salary_payment' emp.pk %}" class="btn btn-outline-success">
+                                <i class="bi bi-cash"></i>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'hourly_statement' emp.pk %}" class="btn btn-outline-info">
+                                <i class="bi bi-receipt"></i>
+                            </a>
+                            <a href="{% url 'hourly_payment_create' emp.pk %}" class="btn btn-outline-success">
+                                <i class="bi bi-cash"></i>
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'employee_delete' emp.pk %}" class="btn btn-outline-danger" onclick="return confirm('هل أنت متأكد؟')">
+                            <i class="bi bi-trash3"></i>
+                        </a>
+                    </div>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="text-center text-muted py-4">لا يوجد موظفون</td></tr>
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    <i class="bi bi-people fs-1 d-block mb-2"></i>
+                    لا يوجد موظفين
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>

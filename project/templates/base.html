@@ -494,18 +494,18 @@ input:disabled,
       </a>
        {% if user_role == 'admin' or user_role == 'accountant' %}
       <p class="nav-section-label">الموارد البشرية</p>
-        <a href="{% url 'hr_dashboard' %}" class="nav-link">
-           لوحة الموارد البشرية
-        </a>
-        <a href="{% url 'employee_list' %}" class="nav-link">
-            الموظفون
-        </a>
-        <a href="{% url 'attendance_list' %}" class="nav-link">
-           الحضور والغياب
-        </a>
-        <a href="{% url 'payroll_list' %}" class="nav-link">
-           الرواتب
-        </a>
+<a href="{% url 'hr_dashboard' %}" class="nav-link {% if 'hr_dashboard' in request.resolver_match.url_name %}active{% endif %}">
+  لوحة الموارد البشرية 
+</a>
+<a href="{% url 'employee_list' %}" class="nav-link {% if 'employee' in request.resolver_match.url_name %}active{% endif %}">
+     الموظفون
+</a>
+<a href="{% url 'absence_list' %}" class="nav-link">
+     الغيابات
+</a>
+<a href="{% url 'hourly_work_list' %}" class="nav-link">
+     ساعات العمل
+</a>
       <p class="nav-section-label">التحليل</p>
       <a href="{% url 'reports' %}" class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}">
         التقارير

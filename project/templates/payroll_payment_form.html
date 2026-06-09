@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block mobile_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white fw-bold">
+        <i class="bi bi-cash-stack me-2"></i>{{ title }}
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info mb-3">
+            <strong>الموظف:</strong> {{ payroll.employee.full_name }}<br>
+            <strong>صافي المرتب المستحق:</strong> {{ payroll.net_salary|floatformat:0 }} ل.س<br>
+            <strong>الفترة:</strong> {{ payroll.period_start|date:"Y-m-d" }} إلى {{ payroll.period_end|date:"Y-m-d" }}
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">المبلغ المدفوع *</label>
+                    {{ form.amount }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">تاريخ الدفع *</label>
+                    {{ form.payment_date }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">طريقة الدفع *</label>
+                    {{ form.payment_method }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">ملاحظات</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+            
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> تسديد
+                </button>
+                <a href="{% url 'payroll_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> إلغاء
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

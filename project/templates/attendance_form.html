@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block mobile_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white fw-bold">
+        <i class="bi bi-calendar-check me-2"></i>{{ title }}
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">الموظف *</label>
+                    {{ form.employee }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">التاريخ *</label>
+                    {{ form.date }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">وقت الحضور</label>
+                    {{ form.check_in_time }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">وقت الانصراف</label>
+                    {{ form.check_out_time }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الحالة *</label>
+                    {{ form.status }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">ملاحظات</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+            
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> حفظ
+                </button>
+                <a href="{% url 'attendance_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

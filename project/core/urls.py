@@ -65,5 +65,6 @@ urlpatterns = [
     path('hr/payroll/', payroll_list, name='payroll_list'),
     path('hr/payroll/create/', payroll_create, name='payroll_create'),
     path('hr/payroll/<int:payroll_id>/pay/', payroll_payment_create, name='payroll_payment_create'),
-
+    path('hr/employees/<int:pk>/delete/', employee_delete, name='employee_delete'),
+    path('hr/payroll/<int:pk>/delete/', payroll_delete, name='payroll_delete'),
 ]

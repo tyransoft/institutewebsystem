@@ -1422,3 +1422,57 @@ def dashboard_hr(request):
         'mobile_title': 'HR Dashboard'
     }
     return render(request, 'hr_dashboard.html', context)
+
+
+@login_required
+def employee_delete(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    
+    if request.method == 'POST':
+        employee_name = employee.full_name
+        
+        with transaction.atomic():
+            payrolls = Payroll.objects.filter(employee=employee)
+            for payroll in payrolls:
+                PayrollPayment.objects.filter(payroll=payroll).delete()
+            payrolls.delete()
+            
+            Attendance.objects.filter(employee=employee).delete()
+            
+            employee.delete()
+        
+        messages.success(request, f'تم حذف الموظف "{employee_name}" وجميع بياناته بنجاح')
+        return redirect('employee_list')
+    
+    payroll_count = Payroll.objects.filter(employee=employee).count()
+    attendance_count = Attendance.objects.filter(employee=employee).count()
+    
+    return render(request, 'employee_confirm_delete.html', {
+        'employee': employee,
+        'payroll_count': payroll_count,
+        'attendance_count': attendance_count,
+        'page_title': 'تأكيد حذف موظف',
+        'mobile_title': 'حذف موظف'
+    })
+
+
+@login_required
+def payroll_delete(request, pk):
+    payroll = get_object_or_404(Payroll, pk=pk)
+    
+    if request.method == 'POST':
+        employee_name = payroll.employee.full_name
+        period = f"{payroll.period_start} إلى {payroll.period_end}"
+        
+        with transaction.atomic():
+            PayrollPayment.objects.filter(payroll=payroll).delete()
+            payroll.delete()
+        
+        messages.success(request, f'تم حذف كشف الراتب للموظف "{employee_name}" للفترة {period}')
+        return redirect('payroll_list')
+    
+    return render(request, 'payroll_confirm_delete.html', {
+        'payroll': payroll,
+        'page_title': 'تأكيد حذف كشف راتب',
+        'mobile_title': 'حذف كشف راتب'
+    })

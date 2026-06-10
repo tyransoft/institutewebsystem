@@ -21,7 +21,7 @@
             </div>
             <div class="col-md-4">
                 <small class="text-muted">الراتب الشهري</small>
-                <div class="fw-bold text-primary">{{ employee.monthly_salary|floatformat:0 }} ل.س</div>
+                <div class="fw-bold text-primary">{{ employee.monthly_salary|floatformat:0 }} د.ل</div>
             </div>
         </div>
     </div>
@@ -42,7 +42,7 @@
                         {% for absence in absences %}
                         <tr>
                             <td>{{ absence.absence_date|date:"Y-m-d" }}</td>
-                            <td>{{ absence.deduction_amount|floatformat:0 }} ل.س</td>
+                            <td>{{ absence.deduction_amount|floatformat:0 }} د.ل</td>
                             <td>{{ absence.reason|default:"--" }}</td>
                             <td>
                                 <a href="{% url 'absence_delete' absence.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف؟')">
@@ -73,7 +73,7 @@
                         {% for payment in payments %}
                         <tr>
                             <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
-                            <td>{{ payment.amount|floatformat:0 }} ل.س</td>
+                            <td>{{ payment.amount|floatformat:0 }} د.ل</td>
                             <td>{{ payment.get_method_display_ar }}</td>
                             <td>{{ payment.receipt_number }}</td>
                         </tr>
@@ -96,25 +96,25 @@
             <div class="col-md-3 mb-3">
                 <div class="border rounded p-2">
                     <small class="text-muted">الراتب الأساسي</small>
-                    <div class="h5 mb-0 text-primary">{{ employee.monthly_salary|floatformat:0 }} ل.س</div>
+                    <div class="h5 mb-0 text-primary">{{ employee.monthly_salary|floatformat:0 }} د.ل</div>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
                 <div class="border rounded p-2">
                     <small class="text-muted">إجمالي الخصومات</small>
-                    <div class="h5 mb-0 text-danger">{{ total_deductions|floatformat:0 }} ل.س</div>
+                    <div class="h5 mb-0 text-danger">{{ total_deductions|floatformat:0 }} د.ل</div>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
                 <div class="border rounded p-2 bg-success bg-opacity-10">
                     <small class="text-muted">صافي المرتب</small>
-                    <div class="h5 mb-0 text-success">{{ net_salary|floatformat:0 }} ل.س</div>
+                    <div class="h5 mb-0 text-success">{{ net_salary|floatformat:0 }} د.ل</div>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
                 <div class="border rounded p-2 bg-warning bg-opacity-10">
                     <small class="text-muted">المتبقي</small>
-                    <div class="h5 mb-0 text-warning">{{ remaining|floatformat:0 }} ل.س</div>
+                    <div class="h5 mb-0 text-warning">{{ remaining|floatformat:0 }} د.ل</div>
                 </div>
             </div>
         </div>

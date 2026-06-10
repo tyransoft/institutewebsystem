@@ -41,9 +41,9 @@
                 </td>
                 <td>
                     {% if emp.payment_type == 'monthly' %}
-                        {{ emp.monthly_salary|floatformat:0 }} ل.س
+                        {{ emp.monthly_salary|floatformat:0 }}د.ل
                     {% else %}
-                        {{ emp.hourly_rate|floatformat:0 }} ل.س/ساعة
+                        {{ emp.hourly_rate|floatformat:0 }}د.ل/ساعة
                     {% endif %}
                 </td>
                 <td>

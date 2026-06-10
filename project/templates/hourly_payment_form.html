@@ -12,10 +12,10 @@
     <div class="card-body">
         <div class="alert alert-info mb-3">
             <strong>{{ employee.full_name }}</strong><br>
-            <small>أجر الساعة: {{ employee.hourly_rate|floatformat:0 }} ل.س</small><br>
-            <small>إجمالي المستحقات: {{ employee.total_hourly_earned|floatformat:0 }} ل.س</small><br>
-            <small>إجمالي المدفوع: {{ employee.total_hourly_paid|floatformat:0 }} ل.س</small><br>
-            <small class="text-warning">المتبقي غير المدفوع: {{ unpaid_total|floatformat:0 }} ل.س</small>
+            <small>أجر الساعة: {{ employee.hourly_rate|floatformat:0 }} د.ل</small><br>
+            <small>إجمالي المستحقات: {{ employee.total_hourly_earned|floatformat:0 }} د.ل</small><br>
+            <small>إجمالي المدفوع: {{ employee.total_hourly_paid|floatformat:0 }} د.ل</small><br>
+            <small class="text-warning">المتبقي غير المدفوع: {{ unpaid_total|floatformat:0 }} د.ل</small>
         </div>
         
         <form method="post">

@@ -31,8 +31,8 @@
                 <td>{{ record.employee.full_name }}</td>
                 <td>{{ record.work_date|date:"Y-m-d" }}</td>
                 <td>{{ record.hours }}</td>
-                <td>{{ record.hourly_rate_at_time|floatformat:0 }} ل.س</td>
-                <td>{{ record.total_amount|floatformat:0 }} ل.س</td>
+                <td>{{ record.hourly_rate_at_time|floatformat:0 }} د.ل</td>
+                <td>{{ record.total_amount|floatformat:0 }} د.ل</td>
                 <td>
                     {% if record.is_paid %}
                         <span class="badge bg-success">مدفوع</span>

@@ -17,7 +17,7 @@
                 <div class="alert alert-warning">
                     <strong>{{ absence.employee.full_name }}</strong><br>
                     التاريخ: {{ absence.absence_date|date:"Y-m-d" }}<br>
-                    الخصم: {{ absence.deduction_amount|floatformat:0 }} ل.س
+                    الخصم: {{ absence.deduction_amount|floatformat:0 }} د.ل
                 </div>
                 <form method="post">
                     {% csrf_token %}

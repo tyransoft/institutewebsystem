@@ -28,7 +28,7 @@
             <tr>
                 <td>{{ absence.employee.full_name }}</td>
                 <td>{{ absence.absence_date|date:"Y-m-d" }}</td>
-                <td>{{ absence.deduction_amount|floatformat:0 }} ل.س</td>
+                <td>{{ absence.deduction_amount|floatformat:0 }} د.ل</td>
                 <td>{{ absence.reason|default:"--" }}</td>
                 <td>
                     <a href="{% url 'absence_delete' absence.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف؟')">

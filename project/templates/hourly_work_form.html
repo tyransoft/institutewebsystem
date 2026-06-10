@@ -19,7 +19,7 @@
                     <select name="employee" class="form-select" required>
                         <option value="">اختر الموظف</option>
                         {% for emp in employees %}
-                        <option value="{{ emp.pk }}">{{ emp.full_name }} - {{ emp.hourly_rate }} ل.س/ساعة</option>
+                        <option value="{{ emp.pk }}">{{ emp.full_name }} - {{ emp.hourly_rate }} د.ل/ساعة</option>
                         {% endfor %}
                     </select>
                 </div>

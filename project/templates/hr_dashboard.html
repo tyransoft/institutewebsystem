@@ -55,13 +55,13 @@
                     <div class="col-6">
                         <div class="border rounded p-2">
                             <small class="text-muted">إجمالي الرواتب</small>
-                            <div class="h6 mb-0">{{ monthly_total_salary|floatformat:0 }} ل.س</div>
+                            <div class="h6 mb-0">{{ monthly_total_salary|floatformat:0 }} د.ل</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="border rounded p-2">
                             <small class="text-muted">إجمالي الخصومات</small>
-                            <div class="h6 mb-0 text-danger">{{ monthly_total_deductions|floatformat:0 }} ل.س</div>
+                            <div class="h6 mb-0 text-danger">{{ monthly_total_deductions|floatformat:0 }} د.ل</div>
                         </div>
                     </div>
                 </div>
@@ -69,13 +69,13 @@
                     <div class="col-6">
                         <div class="border rounded p-2 bg-success bg-opacity-10">
                             <small class="text-muted">صافي المستحق</small>
-                            <div class="h6 mb-0 text-success">{{ monthly_net|floatformat:0 }} ل.س</div>
+                            <div class="h6 mb-0 text-success">{{ monthly_net|floatformat:0 }} د.ل</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="border rounded p-2 bg-warning bg-opacity-10">
                             <small class="text-muted">المتبقي غير المسدد</small>
-                            <div class="h6 mb-0 text-warning">{{ monthly_remaining|floatformat:0 }} ل.س</div>
+                            <div class="h6 mb-0 text-warning">{{ monthly_remaining|floatformat:0 }} د.ل</div>
                         </div>
                     </div>
                 </div>
@@ -93,13 +93,13 @@
                     <div class="col-6">
                         <div class="border rounded p-2">
                             <small class="text-muted">إجمالي المستحقات</small>
-                            <div class="h6 mb-0">{{ hourly_total_earned|floatformat:0 }} ل.س</div>
+                            <div class="h6 mb-0">{{ hourly_total_earned|floatformat:0 }} د.ل</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="border rounded p-2 bg-success bg-opacity-10">
                             <small class="text-muted">إجمالي المدفوع</small>
-                            <div class="h6 mb-0 text-success">{{ hourly_total_earned|add:hourly_remaining|floatformat:0 }} ل.س</div>
+                            <div class="h6 mb-0 text-success">{{ hourly_total_earned|add:hourly_remaining|floatformat:0 }} د.ل</div>
                         </div>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
                     <div class="col-12">
                         <div class="border rounded p-2 bg-warning bg-opacity-10">
                             <small class="text-muted">المتبقي غير المسدد</small>
-                            <div class="h5 mb-0 text-warning">{{ hourly_remaining|floatformat:0 }} ل.س</div>
+                            <div class="h5 mb-0 text-warning">{{ hourly_remaining|floatformat:0 }} د.ل</div>
                         </div>
                     </div>
                 </div>

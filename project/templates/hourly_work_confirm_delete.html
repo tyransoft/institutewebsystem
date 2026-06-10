@@ -18,7 +18,7 @@
                     <strong>{{ work_record.employee.full_name }}</strong><br>
                     التاريخ: {{ work_record.work_date|date:"Y-m-d" }}<br>
                     الساعات: {{ work_record.hours }} ساعة<br>
-                    الإجمالي: {{ work_record.total_amount|floatformat:0 }} ل.س
+                    الإجمالي: {{ work_record.total_amount|floatformat:0 }} د.ل
                 </div>
                 <form method="post">
                     {% csrf_token %}

@@ -290,7 +290,7 @@ def student_list(request):
     if year:
         qs = qs.filter(academic_year=year)
     
-    paginator = Paginator(qs, 15)
+    paginator = Paginator(qs, 32)
     page_number = request.GET.get('page')
     students = paginator.get_page(page_number)
     
@@ -1384,7 +1384,7 @@ def monthly_salary_payment(request, employee_id):
             created_by=request.user
         )
         payment.save()
-        messages.success(request, f'تم تسديد {amount} ل.س للموظف {employee.full_name}')
+        messages.success(request, f'تم تسديد {amount}د.ل للموظف {employee.full_name}')
         return redirect('employee_list')
     
     return render(request, 'monthly_payment_form.html', {'employee': employee})
@@ -1467,7 +1467,7 @@ def hourly_payment_create(request, employee_id):
             created_by=request.user
         )
         payment.save()
-        messages.success(request, f'تم تسديد {amount} ل.س للموظف {employee.full_name}')
+        messages.success(request, f'تم تسديد {amount} د.ل للموظف {employee.full_name}')
         return redirect('employee_list')
     
     unpaid_total = HourlyWorkRecord.objects.filter(employee=employee, is_paid=False).aggregate(total=Sum('total_amount'))['total'] or 0

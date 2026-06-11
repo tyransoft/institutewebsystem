@@ -133,9 +133,9 @@ table.data-table tbody tr:nth-child(even) { background: #fafafa; }
       <tbody>
         {% for inst in installments %}
         <tr>
-          <td>د.ع {{ inst.amount|floatformat:0 }}</td>
-          <td>د.ع {{ inst.paid_amount|floatformat:0 }}</td>
-          <td>د.ع {{ inst.remaining_amount|floatformat:0 }}</td>
+          <td>د.ل {{ inst.amount|floatformat:0 }}</td>
+          <td>د.ل {{ inst.paid_amount|floatformat:0 }}</td>
+          <td>د.ل {{ inst.remaining_amount|floatformat:0 }}</td>
           <td dir="ltr">{{ inst.due_date }}</td>
           <td><span class="badge badge-{{ inst.status }}">{{ inst.get_status_display_ar }}</span></td>
         </tr>
@@ -156,7 +156,7 @@ table.data-table tbody tr:nth-child(even) { background: #fafafa; }
         {% for pay in payments %}
         <tr>
           <td dir="ltr">{{ pay.receipt_number }}</td>
-          <td>د.ع {{ pay.amount|floatformat:0 }}</td>
+          <td>د.ل {{ pay.amount|floatformat:0 }}</td>
           <td dir="ltr">{{ pay.payment_date }}</td>
           <td>{{ pay.get_method_display_ar }}</td>
         </tr>

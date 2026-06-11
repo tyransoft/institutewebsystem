@@ -7,3 +7,5 @@ admin.site.register(Student)
 admin.site.register(StudentInstallment)
 admin.site.register(AcademicSemester)
 admin.site.register(Payment)
+admin.site.register(ExpenseCategory)
+

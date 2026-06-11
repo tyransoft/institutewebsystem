@@ -1449,34 +1449,7 @@ def hourly_work_delete(request, pk):
         return redirect('hourly_work_list')
     return render(request, 'hourly_work_confirm_delete.html', {'work_record': work_record})
 
-@login_required
-def hourly_payment_create(request, employee_id):
-    employee = get_object_or_404(Employee, pk=employee_id, payment_type='hourly')
-    
-    if request.method == 'POST':
-        amount = request.POST.get('amount')
-        payment_date = request.POST.get('payment_date')
-        payment_method = request.POST.get('payment_method')
-        notes = request.POST.get('notes')
-        
-        payment = HourlyPayment(
-            employee=employee,
-            amount=amount,
-            payment_date=payment_date,
-            payment_method=payment_method,
-            notes=notes,
-            created_by=request.user
-        )
-        payment.save()
-        messages.success(request, f'تم تسديد {amount} د.ل للموظف {employee.full_name}')
-        return redirect('employee_list')
-    
-    unpaid_total = HourlyWorkRecord.objects.filter(employee=employee, is_paid=False).aggregate(total=Sum('total_amount'))['total'] or 0
-    
-    return render(request, 'hourly_payment_form.html', {
-        'employee': employee,
-        'unpaid_total': unpaid_total
-    })
+
 
 @login_required
 def hourly_statement(request, employee_id):

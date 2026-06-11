@@ -483,21 +483,37 @@ class MonthlySalaryPayment(models.Model):
     def __str__(self):
         return f"{self.employee.full_name} - {self.amount} - {self.receipt_number}"
     
+
     def save(self, *args, **kwargs):
+        from core.models import ExpenseCategory, Expense
+      
+        
         if not self.receipt_number:
             last_payment = MonthlySalaryPayment.objects.order_by('-id').first()
             if last_payment and last_payment.receipt_number:
                 try:
-                    last_num = int(last_payment.receipt_number.split('-')[-1])
+                    last_num = int(last_payment.receipt_number)
                     new_num = last_num + 1
                 except:
                     new_num = 1
             else:
                 new_num = 1
             date_str = date.today().strftime('%Y%m%d')
-            self.receipt_number = f"MSL-{date_str}-{new_num:04d}"
+            self.receipt_number = f"{date_str}{new_num:04d}"
+        
         super().save(*args, **kwargs)
-    
+        
+        category = ExpenseCategory.objects.first()
+        
+        if category:
+            Expense.objects.create(
+                title=f'صرف راتب شهري - {self.employee.full_name}',
+                amount=self.amount,
+                expense_date=self.payment_date,
+                category=category,
+                description=f'تسديد راتب للموظف {self.employee.full_name} - إيصال رقم {self.receipt_number}',
+                created_by=self.created_by
+            )
     def get_method_display_ar(self):
         return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)
 
@@ -550,12 +566,17 @@ class HourlyPayment(models.Model):
     def __str__(self):
         return f"{self.employee.full_name} - {self.amount} - {self.receipt_number}"
     
+
+    
     def save(self, *args, **kwargs):
+        from core.models import ExpenseCategory, Expense
+        from decimal import Decimal
+        
         if not self.receipt_number:
             last_payment = HourlyPayment.objects.order_by('-id').first()
             if last_payment and last_payment.receipt_number:
                 try:
-                    last_num = int(last_payment.receipt_number.split('-')[-1])
+                    last_num = int(last_payment.receipt_number)
                     new_num = last_num + 1
                 except:
                     new_num = 1
@@ -563,19 +584,32 @@ class HourlyPayment(models.Model):
                 new_num = 1
             date_str = date.today().strftime('%Y%m%d')
             self.receipt_number = f"{date_str}{new_num:04d}"
+        
         super().save(*args, **kwargs)
         
         unpaid_records = HourlyWorkRecord.objects.filter(employee=self.employee, is_paid=False).order_by('work_date')
-        remaining_to_pay =Decimal(self.amount)
+        remaining_to_pay = Decimal(str(self.amount))
         for record in unpaid_records:
-            if Decimal(remaining_to_pay) <= 0:
+            if remaining_to_pay <= 0:
                 break
-            if Decimal(record.total_amount) <= Decimal(remaining_to_pay):
+            if Decimal(str(record.total_amount)) <= remaining_to_pay:
                 record.is_paid = True
-                remaining_to_pay -= Decimal(record.total_amount)
+                remaining_to_pay -= Decimal(str(record.total_amount))
             else:
                 record.is_paid = False
             record.save()
+        
+        category = ExpenseCategory.objects.first()
+        
+        if category:
+            Expense.objects.create(
+                title=f'صرف مستحقات بالساعة - {self.employee.full_name}',
+                amount=self.amount,
+                expense_date=self.payment_date,
+                category=category,
+                description=f'تسديد مستحقات للموظف {self.employee.full_name} - إيصال رقم {self.receipt_number}',
+                created_by=self.created_by
+            )
     
     def get_method_display_ar(self):
         return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)

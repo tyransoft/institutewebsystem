@@ -52,7 +52,7 @@
         <td>
           <span class="badge" style="background:#f3f4f6;color:#374151;">{{ exp.category.name|default:"بدون فئة" }}</span>
         </td>
-        <td class="text-danger fw-semibold">د.ع {{ exp.amount|floatformat:0 }}</td>
+        <td class="text-danger fw-semibold">د.ل {{ exp.amount|floatformat:0 }}</td>
         <td dir="ltr">{{ exp.expense_date }}</td>
         <td class="text-muted">{{ exp.description|default:"—"|truncatechars:40 }}</td>
         <td>

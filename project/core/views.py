@@ -1449,7 +1449,46 @@ def hourly_work_delete(request, pk):
         return redirect('hourly_work_list')
     return render(request, 'hourly_work_confirm_delete.html', {'work_record': work_record})
 
-
+@login_required
+def hourly_payment_create(request, employee_id):
+    employee = get_object_or_404(Employee, pk=employee_id, payment_type='hourly')
+    
+    unpaid_records = HourlyWorkRecord.objects.filter(employee=employee, is_paid=False)
+    total_unpaid = unpaid_records.aggregate(total=models.Sum('total_amount'))['total'] or 0
+    
+    if request.method == 'POST':
+        amount = Decimal(request.POST.get('amount'))
+        payment_date = request.POST.get('payment_date')
+        payment_method = request.POST.get('payment_method')
+        notes = request.POST.get('notes')
+        
+        if amount <= 0:
+            messages.error(request, 'المبلغ يجب أن يكون أكبر من صفر')
+            return redirect('hourly_payment_create', employee_id=employee.id)
+        
+        if amount > Decimal(total_unpaid):
+            messages.warning(request, f'المبلغ المدخل ({amount}) أكبر من المستحق غير المدفوع ({total_unpaid})')
+        
+        payment = HourlyPayment(
+            employee=employee,
+            amount=amount,
+            payment_date=payment_date,
+            payment_method=payment_method,
+            notes=notes,
+            created_by=request.user
+        )
+        payment.save()
+        
+        messages.success(request, f'تم تسديد {amount}  للموظف {employee.full_name}')
+        return redirect('employee_list')
+    
+    context = {
+        'employee': employee,
+        'total_unpaid': total_unpaid,
+        'unpaid_records': unpaid_records,
+        'today': date.today(),
+    }
+    return render(request, 'hr/hourly_payment_form.html', context)
 
 @login_required
 def hourly_statement(request, employee_id):

@@ -562,15 +562,15 @@ class HourlyPayment(models.Model):
             else:
                 new_num = 1
             date_str = date.today().strftime('%Y%m%d')
-            self.receipt_number = f"HPL-{date_str}-{new_num:04d}"
+            self.receipt_number = f"{date_str}{new_num:04d}"
         super().save(*args, **kwargs)
         
         unpaid_records = HourlyWorkRecord.objects.filter(employee=self.employee, is_paid=False).order_by('work_date')
         remaining_to_pay = self.amount
         for record in unpaid_records:
-            if remaining_to_pay <= 0:
+            if Decimal(remaining_to_pay) <= 0:
                 break
-            if record.total_amount <= remaining_to_pay:
+            if Decimal(record.total_amount) <= Decimal(remaining_to_pay):
                 record.is_paid = True
                 remaining_to_pay -= record.total_amount
             else:

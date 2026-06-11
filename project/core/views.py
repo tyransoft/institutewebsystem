@@ -1488,7 +1488,7 @@ def hourly_payment_create(request, employee_id):
         'unpaid_records': unpaid_records,
         'today': date.today(),
     }
-    return render(request, 'hr/hourly_payment_form.html', context)
+    return render(request, 'hourly_payment_form.html', context)
 
 @login_required
 def hourly_statement(request, employee_id):

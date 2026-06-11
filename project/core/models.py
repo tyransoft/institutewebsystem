@@ -369,7 +369,6 @@ class Expense(models.Model):
     def __str__(self):
         return f"{self.title} - {self.amount}"
 
-# models.py - فقط نماذج الموارد البشرية المعدلة مع الاحتفاظ بجدول Employee كما هو
 
 class Employee(models.Model):
     PAYMENT_TYPE_CHOICES = [

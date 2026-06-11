@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.http import JsonResponse,HttpResponse
 from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib import messages
@@ -1416,9 +1418,8 @@ def hourly_work_create(request):
     if request.method == 'POST':
         employee_id = request.POST.get('employee')
         work_date = request.POST.get('work_date')
-        hours = request.POST.get('hours')
         notes = request.POST.get('notes')
-        
+        hours = Decimal(request.POST.get('hours', '0'))   
         employee = get_object_or_404(Employee, pk=employee_id, payment_type='hourly')
         
         work_record = HourlyWorkRecord(

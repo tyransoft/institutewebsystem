@@ -1,3 +1,4 @@
+from decimal import Decimal
 import random
 from django.db import models
 from django.contrib.auth.models import User
@@ -520,7 +521,7 @@ class HourlyWorkRecord(models.Model):
         return f"{self.employee.full_name} - {self.work_date} - {self.hours} ساعات"
     
     def save(self, *args, **kwargs):
-        self.hourly_rate_at_time = self.employee.hourly_rate
+        self.hourly_rate_at_time = Decimal(self.employee.hourly_rate)
         self.total_amount = self.hours * self.hourly_rate_at_time
         super().save(*args, **kwargs)
 

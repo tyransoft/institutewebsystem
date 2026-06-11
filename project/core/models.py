@@ -501,7 +501,7 @@ class MonthlySalaryPayment(models.Model):
             date_str = date.today().strftime('%Y%m%d')
             self.receipt_number = f"{date_str}{new_num:04d}"
         
-        super().save(*args, **kwargs)
+        
         
         category = ExpenseCategory.objects.first()
         
@@ -514,6 +514,7 @@ class MonthlySalaryPayment(models.Model):
                 description=f'تسديد راتب للموظف {self.employee.full_name} - إيصال رقم {self.receipt_number}',
                 created_by=self.created_by
             )
+        super().save(*args, **kwargs)    
     def get_method_display_ar(self):
         return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)
 
@@ -585,7 +586,6 @@ class HourlyPayment(models.Model):
             date_str = date.today().strftime('%Y%m%d')
             self.receipt_number = f"{date_str}{new_num:04d}"
         
-        super().save(*args, **kwargs)
         
         unpaid_records = HourlyWorkRecord.objects.filter(employee=self.employee, is_paid=False).order_by('work_date')
         remaining_to_pay = Decimal(str(self.amount))
@@ -610,6 +610,6 @@ class HourlyPayment(models.Model):
                 description=f'تسديد مستحقات للموظف {self.employee.full_name} - إيصال رقم {self.receipt_number}',
                 created_by=self.created_by
             )
-    
+        super().save(*args, **kwargs)
     def get_method_display_ar(self):
         return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)

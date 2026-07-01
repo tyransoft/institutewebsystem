@@ -21,10 +21,9 @@ TEMP= BASE_DIR / 'templates'
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1b+*jp-8shm%^$221fkbcx4ahj&#e9hk_c^=*jhzo684@)75a2'
-
+SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['django.tip2.libyanspider.cloud']
 
@@ -81,10 +80,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'jabal_institute1',
-        'USER': 'webadmin',
-        'PASSWORD': 'LEEqsp92584',
-        'HOST': '10.7.6.115',
+        'NAME':  os.getenv('DB_NAME'),
+        'USER':  os.getenv('DB_USER'),
+        'PASSWORD':  os.getenv('DB_PASSWORD'),
+        'HOST':  os.getenv('DB_HOST'),
         'PORT': '5432',
     }
 }

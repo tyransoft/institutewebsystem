@@ -140,25 +140,7 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.full_name} ({self.registration_number})"
 
-    def generate_registration_number(self):
-        """إنشاء رقم قيد فريد تلقائي"""
-        year = datetime.now().strftime('%Y')
-        
-        last_student = Student.objects.filter(
-            registration_number__startswith=f"{year}"
-        ).order_by('-registration_number').first()
-        
-        if last_student and last_student.registration_number:
-            try:
-                last_number = int(last_student.registration_number.split('-')[1])
-                new_number = last_number + 1
-            except (IndexError, ValueError):
-                new_number = 1
-        else:
-            new_number = 1
-        
-        registration_number = f"{year}{new_number:04d}"
-        return registration_number
+
 
     def generate_registration_number(self):
  
@@ -327,12 +309,6 @@ class Payment(models.Model):
         return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)
         
 
-   
-    def __str__(self):
-        return f"{self.student.full_name} - {self.amount} - {self.receipt_number}"
-
-    def get_method_display_ar(self):
-        return dict(self.METHOD_CHOICES).get(self.payment_method, self.payment_method)    
 
 
 

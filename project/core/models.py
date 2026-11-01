@@ -6,6 +6,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 # Create your models here.
+from django.utils import timezone
 
 
 class SystemUser(models.Model):
@@ -387,8 +388,15 @@ class Employee(models.Model):
     
     @property
     def total_absence_deductions(self):
-        return AbsenceRecord.objects.filter(employee=self).aggregate(total=models.Sum('deduction_amount'))['total'] or 0
-    
+     today = timezone.localdate()
+
+     return AbsenceRecord.objects.filter(
+        employee=self,
+        absence_date__year=today.year,
+        absence_date__month=today.month
+     ).aggregate(
+        total=models.Sum('deduction_amount')
+     )['total'] or 0
     @property
     def total_monthly_paid(self):
         return MonthlySalaryPayment.objects.filter(employee=self).aggregate(total=models.Sum('amount'))['total'] or 0
